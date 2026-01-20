@@ -5,7 +5,7 @@
 - Ask engineers about LV RB, Penable, Groun and PTAT signls
 
 # Purpose
-Compares all signals outputted by the MUX64 chip to defined values in the qaqc: low voltage power, high voltage power, VREF on all modules, temperature on ETROCs, power to modules. 
+Compares all signals outputted by the MUX64 chip to defined values in the `qaqc/tests/configs/mux64_values.yaml`: low voltage power, high voltage power, VREF on all modules, temperature on ETROCs, power to modules. 
 
 # VREF Pins
 After measuring VREF many times we found the following values for the module:
