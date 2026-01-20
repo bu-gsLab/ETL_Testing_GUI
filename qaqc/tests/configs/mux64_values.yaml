@@ -1,192 +1,320 @@
 0:
-  min:
-  max:
+  description: LV RB
+  max: 9.39
+  min: 9.35
+  name: LV_RB
 1:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 2:
-  min:
-  max:
+  description: VREF3 on module 1
+  max: 1.04
+  min: 1.02
+  name: mod0_a4
 3:
-  min:
-  max:
+  description: VREF2 on module 1
+  max: 1.04
+  min: 1.02
+  name: mod0_a5
 4:
-  min:
-  max:
+  description: VREF4 on module 1
+  max: 1.04
+  min: 1.02
+  name: mod0_a6
 5:
-  min:
-  max:
+  description: VREF1 on module 1
+  max: 1.04
+  min: 1.02
+  name: mod0_a7
 6:
-  min:
-  max:
+  description: VREF3 on module 2
+  max: 1.04
+  min: 1.02
+  name: mod1_a4
 7:
-  min:
-  max:
+  description: VREF2 on module 2
+  max: 1.04
+  min: 1.02
+  name: mod1_a5
 8:
-  min:
-  max:
+  description: VREF4 on module 2
+  max: 1.04
+  min: 1.02
+  name: mod1_a6
 9:
-  min:
-  max:
+  description: VREF1 on module 2
+  max: 1.04
+  min: 1.02
+  name: mod1_a7
 10:
-  min:
-  max:
+  description: VREF3 on module 3
+  max: 1.04
+  min: 1.02
+  name: mod2_a4
 11:
-  min:
-  max:
+  description: VREF2 on module 3
+  max: 1.04
+  min: 1.02
+  name: mod2_a5
 12:
-  min:
-  max:
+  description: VREF4 on module 3
+  max: 1.04
+  min: 1.02
+  name: mod2_a6
 13:
-  min:
-  max:
+  description: VREF1 on module 3
+  max: 1.04
+  min: 1.02
+  name: mod3_a7
 14:
-  min:
-  max:
+  description: VTEMP2 in module 1
+  max: 330
+  min: 100
+  name: ETROC1_VTEMP2
 15:
-  min:
-  max:
+  description: VTEMP2 in module 2
+  max: 330
+  min: 100
+  name: ETROC2_VTEMP2
 16:
-  min:
-  max:
+  description: VTEMP2 in module 3
+  max: 330
+  min: 100
+  name: ETROC3_VTEMP2
 17:
-  min:
+  description: PTAT4
   max:
+  min:
+  name: PTAT4
 18:
-  min:
-  max:
+  description: PEnable4
+  max: 1.20
+  min: 1.22
+  name: PENABLE4
 19:
-  min:
+  description: PTAT5
   max:
+  min:
+  name: PTAT5
 20:
-  min:
-  max:
+  description: PEnable5
+  max: 1.20
+  min: 1.22
+  name: PENABLE5
 21:
-  min:
+  description: PTAT3
   max:
+  min:
+  name: PTAT3
 22:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 23:
-  min:
+  description: PTAT2
   max:
+  min:
+  name: PTAT2
 24:
-  min:
-  max:
+  description: PEnable2
+  max: 1.20
+  min: 1.22
+  name: PENABLE2
 25:
-  min:
+  description: PTAT1
   max:
+  min:
+  name: PTAT1
 26:
-  min:
-  max:
+  description: PEnable1
+  max: 1.20
+  min: 1.22
+  name: PENABLE1
 27:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 28:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 29:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 30:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 31:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 32:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 33:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 34:
-  min:
-  max:
+  description: VTEMP4 in module 3
+  max: 330
+  min: 100
+  name: ETROC3_VTEMP4
 35:
-  min:
-  max:
+  description: VTEMP1 in module 3
+  max: 330
+  min: 100
+  name: ETROC3_VTEMP1
 36:
-  min:
-  max:
+  description: VTEMP3 in module 3
+  max: 330
+  min: 100
+  name: ETROC3_VTEMP3
 37:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 38:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 39:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 40:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 41:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 42:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 43:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 44:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 45:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 46:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 47:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 48:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 49:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 50:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 51:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 52:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 53:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 54:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 55:
-  min:
-  max:
+  description: VTEMP3 in module 1
+  max: 330
+  min: 100
+  name: ETROC1_VTEMP3
 56:
-  min:
-  max:
+  description: VTEMP1 in module 1
+  max: 330
+  min: 100
+  name: ETROC1_VTEMP1
 57:
-  min:
-  max:
+  description: VTEMP4 in module 1
+  max: 330
+  min: 100
+  name: ETROC1_VTEMP4
 58:
-  min:
-  max:
+  description: VTEMP3 in module 2
+  max: 330
+  min: 100
+  name: ETROC2_VTEMP3
 59:
-  min:
-  max:
+  description: VTEMP1 in module 2
+  max: 330
+  min: 100
+  name: ETROC2_VTEMP1
 60:
-  min:
-  max:
+  description: VTEMP4 in module 2
+  max: 330
+  min: 100
+  name: ETROC2_VTEMP4
 61:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 62:
-  min:
-  max:
+  description: "Unused"
+  max: 0
+  min: 0
+  name: "N/A"
 63:
-  min:
+  description: Background
   max:
+  min:
+  name: GROUND
