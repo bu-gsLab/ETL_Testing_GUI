@@ -3,6 +3,7 @@
 - incorporate ptat signal calculation into tamalero (check merge request by tao)
 - support other sized readout boardss
 - Ask engineers about LV RB, Penable, Groun and PTAT signls
+- Update it be an acceptable values at room temp and vs cold for VTEMP pins
 
 # Purpose
 Compares all signals outputted by the MUX64 chip to defined values in the `qaqc/tests/configs/mux64_values.yaml`: low voltage power, high voltage power, VREF on all modules, temperature on ETROCs, power to modules. 
