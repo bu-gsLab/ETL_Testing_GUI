@@ -61,7 +61,7 @@ def test(session):
             all_values_passed = False
     
         if not all_values_passed:
-            raise FailedTestCriteriaError(f"Unexpected LpGBT readings\nDAQ: {bad_daq_reg_val_pairs}\nTRIG: {bad_trig_reg_val_pairs}")
+            raise FailedTestCriteriaError(f"Unexpected LpGBT readings --- DAQ: {len(bad_daq_reg_val_pairs)}, TRIG: {len(bad_trig_reg_val_pairs)}\nDAQ: {bad_daq_reg_val_pairs}\nTRIG: {bad_trig_reg_val_pairs}")
 
     except Exception as e:
         raise FailedTestCriteriaError(str(e))
