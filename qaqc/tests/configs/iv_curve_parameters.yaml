@@ -1,0 +1,8 @@
+"start_voltage": 0 # V
+"stop_voltage": 180 # V
+"voltage_step": 5 # V
+"current_limit": 10 # uA
+"delay": 10 # s
+"ramp_up": 5 # V/s
+"ramp_down": 5 # V/s
+"leave_on": False # Leave the supply on after test (True) or ramp down to 0V after completion (False)
