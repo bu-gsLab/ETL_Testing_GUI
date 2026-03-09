@@ -100,7 +100,7 @@ class ChillerPanel(Panel):
 
         def make_label(text):
             lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 15))
+            lbl.setFont(QFont("Calibri", 12))
             return lbl
         
         label_row = QHBoxLayout()
@@ -155,17 +155,17 @@ class ChillerPanel(Panel):
         
         self.chiller_stop_evt = threading.Event()
         try:
-            self.chiller = JULABO("/dev/chiller", baud=4800)
+            self.chiller = Chiller("/dev/chiller", baud=4800)
             self.lbl_status.setText("Connected")
+            time.sleep(self.sample_time)
+            self.recorder_stop_evt.clear()
+            self.recording_thread = threading.Thread(target=self.record, daemon=True)
+            self.recording_thread.start()
+            self.btn_disconnect.setEnabled(True)
+            self.btn_connect.setEnabled(False)
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
-        
-        self.chiller_stop_evt.clear()
-        self.chiller_thread = threading.Thread(target=self.chiller_run, daemon=True)
-        self.chiller_thread.start()
-        self.btn_disconnect.setEnabled(True)
-        self.btn_connect.setEnabled(False)
-        time.sleep(self.sample_time)
+    
     
     def stop_chiller(self):
         if self.chiller_thread == None:

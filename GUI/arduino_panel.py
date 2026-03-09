@@ -101,7 +101,7 @@ class ArduinoPanel(Panel):
 
         def make_label(text):
             lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 15))
+            lbl.setFont(QFont("Calibri", 12))
             return lbl
 
         self.ambtemp_lbl = make_label("Ambient Temp: --.-°C")
@@ -150,15 +150,15 @@ class ArduinoPanel(Panel):
         try:
             self.arduino.connect()
             self.lbl_status.setText("Connected")
+            time.sleep(self.sample_time)
+            self.recorder_stop_evt.clear()
+            self.recording_thread = threading.Thread(target=self.record, daemon=True)
+            self.recording_thread.start()
+            self.btn_disconnect.setEnabled(True)
+            self.btn_connect.setEnabled(False)
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
 
-        time.sleep(self.sample_time)
-        self.recorder_stop_evt.clear()
-        self.recording_thread = threading.Thread(target=self.record, daemon=True)
-        self.recording_thread.start()
-        self.btn_disconnect.setEnabled(True)
-        self.btn_connect.setEnabled(False)
 
     def stop_recording(self):
         if self.recording_thread == None:

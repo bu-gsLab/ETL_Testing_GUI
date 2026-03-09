@@ -100,7 +100,7 @@ class LVPanel(Panel):
 
         def make_label(text):
             lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 15))
+            lbl.setFont(QFont("Calibri", 12))
             return lbl
         
         channel_row = QHBoxLayout()
@@ -191,15 +191,14 @@ class LVPanel(Panel):
             # TODO: Add more channels
             self.lv = LVPowerSupply("192.168.0.30", channel=1)
             self.lbl_status.setText("Connected")
-        except serial.SerialException as e:
-            print(f"Failed to connect: {e}")
-        
-        self.lv_stop_evt.clear()
-        self.lv_thread = threading.Thread(target=self.lv_run, daemon=True)
-        self.lv_thread.start()
-        self.btn_disconnect.setEnabled(True)
-        self.btn_connect.setEnabled(False)
-        time.sleep(self.sample_time)
+            self.lv_stop_evt.clear()
+            self.lv_thread = threading.Thread(target=self.lv_run, daemon=True)
+            self.lv_thread.start()
+            self.btn_disconnect.setEnabled(True)
+            self.btn_connect.setEnabled(False)
+            time.sleep(self.sample_time)
+        except Exception as e:
+            print(f"Connection failed: {e}")
    
     def stop_lv(self):
         if self.lv_thread == None:

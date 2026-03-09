@@ -100,7 +100,7 @@ class HVPanel(Panel):
 
         def make_label(text):
             lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 15))
+            lbl.setFont(QFont("Calibri", 12))
             return lbl
         
         channel_row = QHBoxLayout()
@@ -191,15 +191,15 @@ class HVPanel(Panel):
             # TODO: Add more channels
             self.hv = HVPowerSupply("/dev/hv_supply", baud=9600, bd_addr=0, channel=0)
             self.lbl_status.setText("Connected")
+            self.hv_stop_evt.clear()
+            self.hv_thread = threading.Thread(target=self.hv_run, daemon=True)
+            self.hv_thread.start()
+            self.btn_disconnect.setEnabled(True)
+            self.btn_connect.setEnabled(False)
+            time.sleep(self.sample_time)
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
-        
-        self.hv_stop_evt.clear()
-        self.hv_thread = threading.Thread(target=self.hv_run, daemon=True)
-        self.hv_thread.start()
-        self.btn_disconnect.setEnabled(True)
-        self.btn_connect.setEnabled(False)
-        time.sleep(self.sample_time)
+    
    
     def stop_hv(self):
         if self.hv_thread == None:

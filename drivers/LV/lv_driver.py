@@ -11,9 +11,12 @@ class LVPowerSupply():
 
     def connect(self):
         if self.sock is None:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(self.timeout)
-            self.sock.connect((self.ip, self.tcp_port))
+            try:
+                self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.sock.settimeout(self.timeout)
+                self.sock.connect((self.ip, self.tcp_port))
+            except Exception as e:
+                raise TimeoutError(f"LV Connection at {self.ip} failed after {self.timeout} seconds")
 
     def close(self):
         if self.sock is not None:
