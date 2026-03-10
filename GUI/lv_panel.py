@@ -6,7 +6,7 @@ import os
 
 from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout
 from pathlib import Path
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from panel import Panel
 
@@ -17,6 +17,8 @@ sys.path.append(str(lv_dir))
 from lv_driver import LVPowerSupply
 
 class LVPanel(Panel):
+
+    update_GUI_signal = pyqtSignal(dict)
     def __init__(self, title="LV Supply"):
         super().__init__(title)
         
@@ -178,6 +180,7 @@ class LVPanel(Panel):
         self.sample_time = 0.5
 
         self.data = {}
+        self.update_GUI_signal.connect(self.update_GUI)
         self.cmd_lock = threading.Lock()
         self.cmd_waiting = False
         self.cmd = None

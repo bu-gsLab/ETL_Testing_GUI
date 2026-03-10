@@ -15,7 +15,8 @@ class ColdboxPanel(Panel):
     def __init__(self, title="Coldbox Monitoring & Control"):
         super().__init__(title)
     
-        self.setFrameShadow(QFrame.Sunken)
+        self.setFrameShadow(QFrame.Shadow.Plain)
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         # ----- Build panels -----
         self.ard = ArduinoPanel()
