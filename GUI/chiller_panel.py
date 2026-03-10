@@ -6,7 +6,7 @@ import os
 
 from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout
 from pathlib import Path
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from panel import Panel
 
@@ -17,6 +17,7 @@ sys.path.append(str(chill_dir))
 from chiller_driver import Chiller
 
 class ChillerPanel(Panel):
+    update_GUI_signal = pyqtSignal(dict)
     def __init__(self, title="Chiller"):
         super().__init__(title)
 
@@ -146,7 +147,12 @@ class ChillerPanel(Panel):
 
         self.subgrid.addLayout(layout, 1, 0, 5, 3)
         self.sample_time = 1.0
+
+        self.data = {}
+        self.update_GUI_signal.connect(self.update_GUI)
+        self.cmd_lock = threading.Lock()
         self.cmd_waiting = False
+        self.cmd = None
 
     def start_chiller(self):
         if self.chiller_thread != None:
@@ -158,9 +164,9 @@ class ChillerPanel(Panel):
             self.chiller = Chiller("/dev/chiller", baud=4800)
             self.lbl_status.setText("Connected")
             time.sleep(self.sample_time)
-            self.recorder_stop_evt.clear()
-            self.recording_thread = threading.Thread(target=self.record, daemon=True)
-            self.recording_thread.start()
+            self.chiller_stop_evt.clear()
+            self.chiller_thread = threading.Thread(target=self.chiller_run, daemon=True)
+            self.chiller_thread.start()
             self.btn_disconnect.setEnabled(True)
             self.btn_connect.setEnabled(False)
         except serial.SerialException as e:
@@ -174,7 +180,6 @@ class ChillerPanel(Panel):
         
         self.chiller_stop_evt.set()
         if self.chiller_thread:
-            self.chiller_thread.join()
             self.chiller_thread = None
         if self.chiller:
             self.chiller.close()
@@ -186,58 +191,96 @@ class ChillerPanel(Panel):
             self.btn_connect.setEnabled(True)
 
     def power_on(self):
-        if self.chiller:
-            self.chiller.set_power_on()
-    
+        with self.cmd_lock:
+            self.cmd = ["power_on"]
+            self.cmd_waiting = True
+
     def power_off(self):
-        if self.chiller:
-            self.chiller.set_power_off()
+        with self.cmd_lock:
+            self.cmd = ["power_off"]
+            self.cmd_waiting = True
         
     def set_temperature(self):
-        if self.chiller:
+        try:
+            value = float(self.input_set_temp.text())
+        except ValueError:
+            print("Invalid set temperature")
+            return
+        
+        with self.cmd_lock:
             self.cmd_waiting = True
+            self.cmd = ["set_temp", value]
+        self.input_set_temp.clear()
+
+    def update_GUI(self, data):
+        self.lbl_curr_temp.setText(f"Current Temp: {data['curr_temp']:.2f} °C")
+        self.lbl_set_temp.setText(f"Set Temp: {data['set_temp']:.2f} °C")
+        if data["power"] == '1':
+            self.lbl_power.setText("Power: ON")
+            self.btn_power_on.setEnabled(False)
+            self.btn_power_off.setEnabled(True)
+        else:
+            self.lbl_power.setText("Power: OFF")
+            self.btn_power_on.setEnabled(True)
+            self.btn_power_off.setEnabled(False)
+
 
     def chiller_run(self):
         while not self.chiller_stop_evt.is_set():
-            if not self.cmd_waiting:
-                try:
-                    self.curr_temp = self.chiller.get_temperature()
-                    self.set_temp = self.chiller.get_work_temperature()
-                    self.lbl_curr_temp.setText(f"Current Temp: {self.curr_temp:.2f} °C")
-                    self.lbl_set_temp.setText(f"Set Temp: {self.set_temp:.2f} °C")
-                    self.power = self.chiller.get_power().strip()
-                    if self.power == '1':
-                        self.lbl_power.setText("Power: ON")
-                        self.btn_power_on.setEnabled(False)
-                        self.btn_power_off.setEnabled(True)
-                    else:
-                        self.lbl_power.setText("Power: OFF")
-                        self.btn_power_on.setEnabled(True)
-                        self.btn_power_off.setEnabled(False)
-                    
-                    if self.log_status:
-                        timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
-                        maindir = Path(__file__).parent.parent
+            with self.cmd_lock:
+                cmd = self.cmd
+                waiting = self.cmd_waiting
+                if waiting:
+                    self.cmd_waiting = False
+                    self.cmd = None
 
-                        resultdir = maindir / "Environmental Data" / "Chiller Data"
-                        if not os.path.isdir(resultdir):
-                            os.makedirs(resultdir)
+            if waiting:
+                if cmd[0] == "set_temp":
+                    try:
+                        value = cmd[1]
+                        self.chiller.set_work_temp(value)
+                    except Exception as e:
+                        print(f"Error: {e}")
+                elif cmd[0] == "power_on":
+                    try:
+                        self.chiller.set_power_on()
+                    except Exception as e:
+                        print(f"Error: {e}")
+                elif cmd[0] == "power_off":
+                    try:
+                        self.chiller.set_power_off()
+                    except Exception as e:
+                        print(f"Error: {e}")
+    
+            try:
+                self.curr_temp = self.chiller.get_temperature()
+                self.set_temp = self.chiller.get_work_temperature()
+                self.power = self.chiller.get_power().strip()
 
-                        resultdir.mkdir(exist_ok=True)
+                self.data["curr_temp"] = self.curr_temp
+                self.data["set_temp"] = self.set_temp
+                self.data["power"] = self.power
+            except Exception as e:
+                print(f"Error reading chiller data: {e}")
 
-                        outfile = resultdir / f"chiller_data_{self.log_timestamp}.csv"
+            if self.data:
+                self.update_GUI_signal.emit(self.data)
 
-                        data = {"Power": self.power.strip(), "Set Temp (°C)": self.set_temp, "Curr Temp (°C)": self.curr_temp}
-                        with open(outfile, 'a') as f:
-                            f.write(f"{timestamp}: {data}\n")
+            if self.log_status:
+                timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
+                maindir = Path(__file__).parent.parent
 
-                except Exception as e:
-                    print(f"Error reading chiller data: {e}")
-            else:
-                self.cmd_waiting = False
-                temp = float(self.input_set_temp.text())
-                self.chiller.set_work_temperature(temp)
-                self.input_set_temp.clear()
+                resultdir = maindir / "Environmental Data" / "Chiller Data"
+                if not os.path.isdir(resultdir):
+                    os.makedirs(resultdir)
+
+                resultdir.mkdir(exist_ok=True)
+
+                outfile = resultdir / f"chiller_data_{self.log_timestamp}.csv"
+
+                data = {"Power": self.power.strip(), "Set Temp (°C)": self.set_temp, "Curr Temp (°C)": self.curr_temp}
+                with open(outfile, 'a') as f:
+                    f.write(f"{timestamp}: {data}\n")
 
             time.sleep(self.sample_time)
 

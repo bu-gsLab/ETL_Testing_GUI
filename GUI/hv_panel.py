@@ -6,7 +6,7 @@ import os
 
 from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout
 from pathlib import Path
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from panel import Panel
 
@@ -17,6 +17,8 @@ sys.path.append(str(hv_dir))
 from hv_driver import HVPowerSupply
 
 class HVPanel(Panel):
+    update_GUI_signal = pyqtSignal(dict)
+
     def __init__(self, title="HV Supply"):
         super().__init__(title)
 
@@ -176,8 +178,14 @@ class HVPanel(Panel):
 
         self.subgrid.addLayout(main_layout, 1, 0, 5, 5, Qt.AlignTop)
         self.sample_time = 0.5
+
+        self.cmd_lock = threading.Lock()
         self.cmd_waiting = False
         self.cmd = None
+
+        self.data = {}
+
+        self.update_GUI_signal.connect(self.update_GUI)
 
 
 
@@ -208,7 +216,6 @@ class HVPanel(Panel):
         
         self.hv_stop_evt.set()
         if self.hv_thread:
-            self.hv_thread.join()
             self.hv_thread = None
         if self.hv:
             self.hv.close()
@@ -224,83 +231,111 @@ class HVPanel(Panel):
 
     def hv_run(self):
         while not self.hv_stop_evt.is_set():
-            if not self.cmd_waiting:
-                self.vset = self.hv.extract_float_value(self.hv.read_vset())
-                self.vmon = self.hv.extract_float_value(self.hv.read_vmon())
-                self.iset = self.hv.extract_float_value(self.hv.read_iset())
-                self.imon = self.hv.extract_float_value(self.hv.read_imon())
-                self.status = int(self.hv.read_status()['VAL'])
-                self.output = self.status & 1
 
-                if self.output:
-                    self.lbl_channel.setText("OUTPUT: ON")
-                    self.btn_channel_off.setEnabled(True)
-                    self.btn_channel_on.setEnabled(False)
-                else:
-                    self.lbl_channel.setText("OUTPUT: OFF")
-                    self.btn_channel_off.setEnabled(False)
-                    self.btn_channel_on.setEnabled(True)
+            with self.cmd_lock:
+                cmd = self.cmd
+                waiting = self.cmd_waiting
+                if waiting:
+                    self.cmd_waiting = False
+                    self.cmd = None
 
-                self.lbl_set_voltage.setText(f"VSET: {self.vset} V")
-                self.lbl_set_current.setText(f"ISET: {self.iset} uA")
-                self.lbl_mon_voltage.setText(f"VMON: {self.vmon} V")
-                self.lbl_mon_current.setText(f"IMON: {self.imon} uA")
-                if self.log_status:
-                    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
-                    maindir = Path(__file__).parent.parent
-
-                    resultdir = maindir / "Environmental Data" / "HV Supply Data"
-                    if not os.path.isdir(resultdir):
-                        os.makedirs(resultdir)
-
-                    resultdir.mkdir(exist_ok=True)
-
-                    outfile = resultdir / f"hv_supply_data_{self.log_timestamp}.csv"
-
-                    data = {"OUTPUT": self.output, "VSET": self.vset, "VMON": self.vmon, "ISET": self.iset, "IMON": self.imon, "Status": self.status}
-                    with open(outfile, 'a') as f:
-                        f.write(f"{timestamp}: {data}\n")
-            else:
-                if self.cmd == "vset":
+            if waiting:
+                if cmd[0] == "vset":
                     try:
-                        value = float(self.set_voltage_field.text())
+                        value = cmd[1]
                         self.hv.set_voltage(value)
                     except Exception as e:
                         print(f"Error: {e}")
-                        self.set_voltage_field.clear()
-                    self.set_voltage_field.clear()
-                
-                elif self.cmd == "iset":
+                elif cmd[0] == "iset":
                     try:
-                        value = float(self.set_current_field.text())
+                        value = cmd[1]
                         self.hv.set_current_limit(value)
                     except Exception as e:
                         print(f"Error: {e}")
-                        self.set_current_field.clear()
-                    self.set_current_field.clear()
-
-                elif self.cmd == "output":
+                elif cmd[0] == "output":
                     if self.output:
                         self.hv.set_channel_off()
                     else:
                         self.hv.set_channel_on()
-                
-                
-                self.cmd_waiting = False
-                self.cmd = None
+    
+            self.vset = self.hv.extract_float_value(self.hv.read_vset())
+            self.vmon = self.hv.extract_float_value(self.hv.read_vmon())
+            self.iset = self.hv.extract_float_value(self.hv.read_iset())
+            self.imon = self.hv.extract_float_value(self.hv.read_imon())
+            self.status = int(self.hv.read_status()['VAL'])
+            self.output = self.status & 1
+
+            self.data["vset"] = self.vset
+            self.data["vmon"] = self.vmon
+            self.data["iset"] = self.iset
+            self.data["imon"] = self.imon
+            self.data["status"] = self.status
+            self.data["output"] = self.output
+
+            self.update_GUI_signal.emit(self.data)
+
+            if self.log_status:
+                timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
+                maindir = Path(__file__).parent.parent
+
+                resultdir = maindir / "Environmental Data" / "HV Supply Data"
+                if not os.path.isdir(resultdir):
+                    os.makedirs(resultdir)
+
+                resultdir.mkdir(exist_ok=True)
+
+                outfile = resultdir / f"hv_supply_data_{self.log_timestamp}.csv"
+
+                data = {"OUTPUT": self.output, "VSET": self.vset, "VMON": self.vmon, "ISET": self.iset, "IMON": self.imon, "Status": self.status}
+                with open(outfile, 'a') as f:
+                    f.write(f"{timestamp}: {data}\n")
+
             time.sleep(self.sample_time)
 
+    def update_GUI(self, data):
+        if data["output"]:
+            self.lbl_channel.setText("OUTPUT: ON")
+            self.btn_channel_off.setEnabled(True)
+            self.btn_channel_on.setEnabled(False)
+        else:
+            self.lbl_channel.setText("OUTPUT: OFF")
+            self.btn_channel_off.setEnabled(False)
+            self.btn_channel_on.setEnabled(True)
+
+        self.lbl_set_voltage.setText(f"VSET: {data['vset']} V")
+        self.lbl_set_current.setText(f"ISET: {data['iset']} uA")
+        self.lbl_mon_voltage.setText(f"VMON: {data['vmon']} V")
+        self.lbl_mon_current.setText(f"IMON: {data['imon']} uA")
+
+
     def set_voltage(self):
-        self.cmd_waiting = True
-        self.cmd = "vset"
+        try:
+            value = float(self.set_voltage_field.text())
+        except ValueError:
+            print("Invalid set voltage")
+            return
+
+        with self.cmd_lock:
+            self.cmd_waiting = True
+            self.cmd = ["vset", value]
+        self.set_voltage_field.clear()
 
     def set_current(self):
-        self.cmd_waiting = True
-        self.cmd = "iset"
+        try:
+            value = float(self.set_current_field.text())
+        except ValueError:
+            print("Invalid set current")
+            return
+        
+        with self.cmd_lock:
+            self.cmd_waiting = True
+            self.cmd = ["iset", value]
+        self.set_current_field.clear()
     
     def set_channel(self):
-        self.cmd_waiting = True
-        self.cmd = "output"
+        with self.cmd_lock:
+            self.cmd_waiting = True
+            self.cmd = ["output"]
 
     def toggle_log(self):
         self.log_status = not self.log_status

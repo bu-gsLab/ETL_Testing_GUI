@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QSplitter, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QSplitter, QVBoxLayout, QFrame
 from PyQt5.QtCore import Qt, QTimer, QSize
 from PyQt5.QtGui import QIcon
 from pathlib import Path
@@ -12,9 +12,10 @@ from lv_panel import LVPanel
 from panel import Panel
 
 class ColdboxPanel(Panel):
-    def __init__(self, title=None):
+    def __init__(self, title="Coldbox Monitoring & Control"):
         super().__init__(title)
     
+        self.setFrameShadow(QFrame.Sunken)
 
         # ----- Build panels -----
         self.ard = ArduinoPanel()
@@ -29,4 +30,4 @@ class ColdboxPanel(Panel):
         self.coldbox_layout.addWidget(self.hv)
         self.coldbox_layout.addWidget(self.lv)
 
-        self.subgrid.addLayout(self.coldbox_layout, 0, 0, 5, 5, Qt.AlignTop)
+        self.subgrid.addLayout(self.coldbox_layout, 1, 0, 5, 5, Qt.AlignTop)
