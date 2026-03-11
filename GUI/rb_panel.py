@@ -62,15 +62,26 @@ class RBPanel(Panel):
         QPushButton#blueButton:pressed { background-color: #0056b3; }
         """)
 
-        main_layout = QHBoxLayout()
+        main_layout = QVBoxLayout()
 
         self.slot1 = ModulePanel(1)
         self.slot2 = ModulePanel(2)
         self.slot3 = ModulePanel(3)
 
-        main_layout.addWidget(self.slot1)
-        main_layout.addWidget(self.slot2)
-        main_layout.addWidget(self.slot3)
+        self.slot_row = QHBoxLayout()
+        self.slot_row.addWidget(self.slot1)
+        self.slot_row.addWidget(self.slot2)
+        self.slot_row.addWidget(self.slot3)
+
+        self.run_all_slot_tests = QPushButton("Run All Tests")
+        self.run_all_slot_tests.setObjectName("redButton")
+        self.slot_button_row = QHBoxLayout()
+        self.slot_button_row.addStretch()
+        self.slot_button_row.addWidget(self.run_all_slot_tests)
+        self.slot_button_row.addStretch()
+
+        main_layout.addLayout(self.slot_row)
+        main_layout.addLayout(self.slot_button_row)
 
 
         self.subgrid.addLayout(main_layout, 1, 0, 5, 5, Qt.AlignTop)

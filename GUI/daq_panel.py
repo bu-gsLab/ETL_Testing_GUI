@@ -18,12 +18,15 @@ class DAQPanel(Panel):
         # ----- Build panels -----
 
         # ----- Coldbox column: Arduino / Chiller / HV / LV -----
-        self.DAQ_layout = QVBoxLayout()
+        self.rb_layout = QVBoxLayout()
         self.rb1 = RBPanel(1)
         self.rb2 = RBPanel(2)
-        self.DAQ_layout.addWidget(self.rb1)
-        self.DAQ_layout.addWidget(self.rb2)
+        self.rb_layout.addWidget(self.rb1)
+        self.rb_layout.addWidget(self.rb2)
+
+        mainlayout = QVBoxLayout()
+        mainlayout.addLayout(self.rb_layout)
 
 
 
-        self.subgrid.addLayout(self.DAQ_layout, 1, 0, 5, 5, Qt.AlignTop)
+        self.subgrid.addLayout(mainlayout, 1, 0, 5, 5, Qt.AlignTop)
