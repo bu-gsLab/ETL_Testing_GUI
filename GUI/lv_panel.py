@@ -9,12 +9,7 @@ from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from panel import Panel
-
-MAIN_DIR = Path(__file__).parent.parent
-lv_dir = MAIN_DIR / "drivers" / "LV"
-sys.path.append(str(lv_dir))
-
-from lv_driver import LVPowerSupply
+from drivers.LV.lv_driver import LVPowerSupply
 
 class LVPanel(Panel):
 

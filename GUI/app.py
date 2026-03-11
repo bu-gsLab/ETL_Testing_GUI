@@ -6,6 +6,7 @@ from PyQt5.QtGui import QIcon
 from pathlib import Path
 
 from coldbox_panel import ColdboxPanel
+from daq_panel import DAQPanel
 
 MAIN_DIR = Path(__file__).parent.parent
 gui_dir = MAIN_DIR / "GUI"
@@ -28,10 +29,15 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tabs)
 
         self.DAQ_tab = QWidget()
-
         self.coldbox_tab = QWidget()
+
+        self.DAQ_tab_layout = QVBoxLayout(self.DAQ_tab)
         self.coldbox_tab_layout = QVBoxLayout(self.coldbox_tab)
+
+        self.DAQ_frame = DAQPanel()
         self.coldbox_frame = ColdboxPanel()
+
+        self.DAQ_tab_layout.addWidget(self.DAQ_frame)
         self.coldbox_tab_layout.addWidget(self.coldbox_frame)
 
         self.tabs.addTab(self.DAQ_tab, "DAQ")

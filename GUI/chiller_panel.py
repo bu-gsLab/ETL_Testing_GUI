@@ -9,12 +9,7 @@ from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from panel import Panel
-
-MAIN_DIR = Path(__file__).parent.parent
-chill_dir = MAIN_DIR / "drivers" / "Chiller"
-sys.path.append(str(chill_dir))
-
-from chiller_driver import Chiller
+from drivers.Chiller.chiller_driver import Chiller
 
 class ChillerPanel(Panel):
     update_GUI_signal = pyqtSignal(dict)

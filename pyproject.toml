@@ -34,3 +34,6 @@ dependencies = [
 
 [tool.uv.sources]
 cocina = { git = "https://github.com/danbarto/cocina.git", rev = "v1.0.0" }
+
+[tool.setuptools.packages.find]
+where = ["."]

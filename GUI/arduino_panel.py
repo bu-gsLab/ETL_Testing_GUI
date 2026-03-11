@@ -9,12 +9,7 @@ from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from panel import Panel
-
-MAIN_DIR = Path(__file__).parent.parent
-ard_dir = MAIN_DIR / "drivers" / "Arduino"
-sys.path.append(str(ard_dir))
-
-from arduino_driver import Arduino
+from drivers.Arduino.arduino_driver import Arduino
 
 class ArduinoPanel(Panel):
     update_GUI_signal = pyqtSignal(dict)

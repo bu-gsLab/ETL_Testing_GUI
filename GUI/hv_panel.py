@@ -9,12 +9,7 @@ from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from panel import Panel
-
-MAIN_DIR = Path(__file__).parent.parent
-hv_dir = MAIN_DIR / "drivers" / "HV"
-sys.path.append(str(hv_dir))
-
-from hv_driver import HVPowerSupply
+from drivers.HV.hv_driver import HVPowerSupply
 
 class HVPanel(Panel):
     update_GUI_signal = pyqtSignal(dict)
