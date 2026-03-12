@@ -4,19 +4,22 @@ import serial
 import time
 import os
 
-from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QCheckBox, QScrollArea, QWidget
+from PyQt5.QtWidgets import QPushButton, QFrame, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QCheckBox, QScrollArea, QWidget
 from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from panel import Panel
+from helpers.checkable_combobox import CheckableComboBox
 
 class ModulePanel(Panel):
     def __init__(self, slot_no):
         super().__init__(f"Slot {slot_no}")
+        self.slot_no = slot_no
         self.setObjectName("ModulePanel")
         self.setStyleSheet("""
         #HVPanel QWidget { color: #ffffff; }
         QLabel { color: #ffffff; }
+        QCheckBox { color: #ffffff; }
 
         QLineEdit, QPlainTextEdit {
             color: #ffffff;
@@ -60,7 +63,6 @@ class ModulePanel(Panel):
         QPushButton#blueButton:hover { background-color: #339cff; }
         QPushButton#blueButton:pressed { background-color: #0056b3; }
         """)
-
         self.enable_check = QCheckBox("Use Slot", self)
         self.enable_check.setChecked(False)
         self.enable_check.stateChanged.connect(self.checkbox_changed)
@@ -69,7 +71,6 @@ class ModulePanel(Panel):
         self.module_id_row = QHBoxLayout()
 
         self.module_id_label = QLabel("Module ID: ")
-        self.module_id_label.setFont(QFont("Calibri", 12))
         self.module_id_inputbox = QLineEdit()
         self.module_id_inputbox.setEnabled(False)
         self.module_id_label.hide()
@@ -80,36 +81,27 @@ class ModulePanel(Panel):
         self.module_id_row.addStretch()
 
 
-        self.test_select_scroll = QScrollArea()
-        self.test_select_scroll.setWidgetResizable(True)
-
+        self.test_select_row = QHBoxLayout()
         container = QWidget()
-        self.scroll_container = QVBoxLayout(container)
-        self.test_scroll_lbl = QLabel("Test Selection")
-        self.test_scroll_lbl.setFont(QFont("Calibri", 12))
-        self.scroll_container.addWidget(self.test_scroll_lbl)
+        self.scroll_container = CheckableComboBox(container)
 
+        self.scroll_container.addItem("Select tests...")
+        self.scroll_container.model().item(0, 0).setFlags(Qt.NoItemFlags)
+        self.scroll_container.view().setRowHidden(0, True)
         for i in range(30):
-            self.scroll_container.addWidget(QCheckBox(f"Test {i+1}"))
+            self.scroll_container.addItem(f"Test {i+1}")
         
-        self.scroll_container.addStretch()
-        self.test_select_scroll.setWidget(container)
-        
-        self.test_select_scroll.hide()
-
-        self.run_tests_btn = QPushButton("Run Tests")
-        self.run_tests_btn.setObjectName("redButton")
-        self.run_tests_btn.hide()
-        self.run_tests_btn_row = QHBoxLayout()
-        self.run_tests_btn_row.addStretch()
-        self.run_tests_btn_row.addWidget(self.run_tests_btn)
-        self.run_tests_btn_row.addStretch()
+        self.test_select_lbl = QLabel("Tests: ")
+        self.test_select_row.addWidget(self.test_select_lbl)
+        self.test_select_row.addWidget(self.scroll_container)
+        self.test_select_lbl.hide()
+        self.scroll_container.hide()
+        self.test_select_row.addStretch()
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.enable_check)
         main_layout.addLayout(self.module_id_row)
-        main_layout.addWidget(self.test_select_scroll)
-        main_layout.addLayout(self.run_tests_btn_row)
+        main_layout.addLayout(self.test_select_row)
         main_layout.addStretch()
 
         self.subgrid.addLayout(main_layout, 1, 0, 5, 5, Qt.AlignTop)
@@ -119,12 +111,11 @@ class ModulePanel(Panel):
             self.module_id_inputbox.setEnabled(True)
             self.module_id_label.show()
             self.module_id_inputbox.show()
-            self.test_select_scroll.show()
-            self.run_tests_btn.show()
+            self.test_select_lbl.show()
+            self.scroll_container.show()
         else:
             self.module_id_inputbox.setEnabled(False)
             self.module_id_label.hide()
             self.module_id_inputbox.hide()
-            self.test_select_scroll.hide()
-            self.run_tests_btn.hide()
-
+            self.test_select_lbl.hide()
+            self.scroll_container.hide()

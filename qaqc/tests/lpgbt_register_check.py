@@ -1,5 +1,7 @@
 from qaqc import register, required
 from qaqc.errors import FailedTestCriteriaError
+
+'''comment until added to etlup
 from etlup.tamalero.LPGBTRegisters import LPGBTRegistersV0
 import yaml
 from pathlib import Path
@@ -75,3 +77,4 @@ def test(session):
     }
 
     return LPGBTRegistersV0(**data)
+'''
