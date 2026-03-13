@@ -36,5 +36,13 @@ class CheckableComboBox(QtWidgets.QComboBox):
         item.setCheckState(QtCore.Qt.Unchecked)
 
     def itemChecked(self, index):
-        item = self.model().item(i,0)
+        item = self.model().item(index,0)
         return item.checkState() == QtCore.Qt.Checked
+
+    def getCheckedItems(self):
+        checked_items = []
+        for i in range(self.count()):
+            item = self.model().item(i, 0)
+            if self.itemChecked(i):
+                checked_items.append(item.text())
+        return checked_items

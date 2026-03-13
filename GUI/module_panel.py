@@ -11,10 +11,17 @@ from PyQt5.QtGui import QFont
 from panel import Panel
 from helpers.checkable_combobox import CheckableComboBox
 
+from etlup.tamalero import *
+
 class ModulePanel(Panel):
     def __init__(self, slot_no):
         super().__init__(f"Slot {slot_no}")
         self.slot_no = slot_no
+        self.module_tests = {
+            "Baseline": Baseline.BaselineV0,
+            "Noise Width": Noisewidth.NoisewidthV0
+        }
+
         self.setObjectName("ModulePanel")
         self.setStyleSheet("""
         #HVPanel QWidget { color: #ffffff; }
@@ -88,8 +95,8 @@ class ModulePanel(Panel):
         self.scroll_container.addItem("Select tests...")
         self.scroll_container.model().item(0, 0).setFlags(Qt.NoItemFlags)
         self.scroll_container.view().setRowHidden(0, True)
-        for i in range(30):
-            self.scroll_container.addItem(f"Test {i+1}")
+        for key in self.module_tests:
+            self.scroll_container.addItem(key)
         
         self.test_select_lbl = QLabel("Tests: ")
         self.test_select_row.addWidget(self.test_select_lbl)

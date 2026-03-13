@@ -12,12 +12,20 @@ from panel import Panel
 from module_panel import ModulePanel
 from helpers.checkable_combobox import CheckableComboBox
 
+from etlup.tamalero import *
+
 class RBPanel(Panel):
     run_tests_signal = pyqtSignal(object)
     def __init__(self, rb_pos):
         self.rb_pos = rb_pos
         self.rb_size = 3
         super().__init__(f"RB {rb_pos}")
+
+        self.rb_tests = {
+            "RB Communication": ReadoutBoardCommunication.ReadoutBoardCommunicationV0,
+            "MUX64 Values": Mux64Values.Mux64ValuesV0
+        }
+
         self.setObjectName("RBPanel")
         self.setStyleSheet("""
         #HVPanel QWidget { color: #ffffff; }
@@ -83,8 +91,8 @@ class RBPanel(Panel):
         self.scroll_container.addItem("Select tests...")
         self.scroll_container.model().item(0, 0).setFlags(Qt.NoItemFlags)
         self.scroll_container.view().setRowHidden(0, True)
-        for i in range(30):
-            self.scroll_container.addItem(f"Test {i+1}")
+        for key in self.rb_tests:
+            self.scroll_container.addItem(key)
         
         self.test_select_lbl = QLabel("Tests: ")
         self.test_select_row.addWidget(self.test_select_lbl)
@@ -119,3 +127,6 @@ class RBPanel(Panel):
 
     def run_tests(self):
         self.run_tests_signal.emit(self)
+
+
+    

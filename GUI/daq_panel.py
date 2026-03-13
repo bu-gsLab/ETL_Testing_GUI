@@ -115,9 +115,32 @@ class DAQPanel(Panel):
         self.daq_stop_evt = threading.Event()
 
         self.daq_stop_evt.clear()
-        self.daq_thread = threading.Thread(target=self.run_tests, daemon=True)
+        self.daq_thread = threading.Thread(target=self.run_tests, daemon=True, args=(rb_obj,))
         self.daq_thread.start()
     
-    def run_tests(self):
-        print(self.session)
+    def run_tests(self, rb_obj):
+        rb_tests_str = rb_obj.scroll_container.getCheckedItems()
+
+        rb_tests = []
+        # Convert string to etlup test object
+        for i in range(len(rb_tests_str)):
+            rb_tests.append(rb_obj.rb_tests[rb_tests_str[i]])
+
+        for i in range(len(rb_obj.modules)):
+            mod_tests_str = rb_obj.modules[i].scroll_container.getCheckedItems()
+
+            if mod_tests_str == []:
+                continue
+
+            mod_tests = []
+            for j in range(len(mod_tests_str)):
+                mod_tests.append(rb_obj.modules[i].module_tests[mod_tests_str[j]])
+
+            test_sequence_str = rb_tests_str + mod_tests_str
+            test_sequence = rb_tests + mod_tests
+
+            print(f"Slot {i+1} Tests: {test_sequence_str}")
+            #self.session.iter_test_sequence(test_sequence, slot=i)
+
+
         self.daq_stop_evt.set()
