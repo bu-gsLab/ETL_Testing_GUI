@@ -41,7 +41,7 @@ fi
 echo "Creating virtual environment..."
 rm -rf .venv
 uv cache clean
-uv python pin 3.14
+uv python pin "/usr/local/bin/python3.14"
 uv venv --system-site-packages
 
 # Sync all project dependencies
