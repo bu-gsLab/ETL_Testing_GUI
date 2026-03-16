@@ -29,10 +29,17 @@ dependencies = [
     "tqdm>=4.67.3",
     "uhal; sys_platform == 'linux'",
     "yahist>=1.14.2",
+    "tamalero"
 ]
 
 [tool.uv.sources]
 cocina = { git = "https://github.com/danbarto/cocina.git", rev = "v1.0.0" }
+tamalero = { workspace=true }
+
+[tool.uv.workspace]
+members = [
+    "module_test_sw",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
