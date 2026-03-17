@@ -18,7 +18,9 @@ fi
 # Setup tamalero submodule
 echo "Setting up tamalero submodule..."
 if [ -f "module_test_sw/setup.sh" ]; then
-    source "module_test_sw/setup.sh"
+    cd "module_test_sw"
+    source "setup.sh"
+    cd ".."
 fi
 
 # Recreate uv env with system-site-packages so uHAL becomes visible

@@ -17,9 +17,13 @@ class ModulePanel(Panel):
     def __init__(self, slot_no):
         super().__init__(f"Slot {slot_no}")
         self.slot_no = slot_no
-        self.module_tests = {
+        self.module_str_to_tests = {
             "Baseline": Baseline.BaselineV0,
             "Noise Width": Noisewidth.NoisewidthV0
+        }
+        self.module_tests_to_str = {
+            Baseline.BaselineV0: "Baseline",
+            Noisewidth.NoisewidthV0: "Noise Width"
         }
 
         self.setObjectName("ModulePanel")
@@ -82,7 +86,7 @@ class ModulePanel(Panel):
         self.module_id_inputbox.setEnabled(False)
         self.module_id_label.hide()
         self.module_id_inputbox.hide()
-        self.module_id_inputbox.setFixedSize(100,50)
+        self.module_id_inputbox.setFixedSize(100,30)
         self.module_id_row.addWidget(self.module_id_label)
         self.module_id_row.addWidget(self.module_id_inputbox)
         self.module_id_row.addStretch()
@@ -95,7 +99,7 @@ class ModulePanel(Panel):
         self.scroll_container.addItem("Select tests...")
         self.scroll_container.model().item(0, 0).setFlags(Qt.NoItemFlags)
         self.scroll_container.view().setRowHidden(0, True)
-        for key in self.module_tests:
+        for key in self.module_str_to_tests:
             self.scroll_container.addItem(key)
         
         self.test_select_lbl = QLabel("Tests: ")

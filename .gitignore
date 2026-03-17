@@ -6,6 +6,11 @@ dist/
 wheels/
 *.egg-info
 
+
+# Tamalero stuff
+lpgbt_adc_calibrations*
+
+
 # Virtual environments
 .venv
 

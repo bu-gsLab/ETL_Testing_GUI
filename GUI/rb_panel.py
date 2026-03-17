@@ -21,9 +21,14 @@ class RBPanel(Panel):
         self.rb_size = 3
         super().__init__(f"RB {rb_pos}")
 
-        self.rb_tests = {
+        self.rb_str_to_tests = {
             "RB Communication": ReadoutBoardCommunication.ReadoutBoardCommunicationV0,
             "MUX64 Values": Mux64Values.Mux64ValuesV0
+        }
+
+        self.rb_tests_to_str = {
+            ReadoutBoardCommunication.ReadoutBoardCommunicationV0: "RB Communication",
+            Mux64Values.Mux64ValuesV0: "MUX64 Values"
         }
 
         self.setObjectName("RBPanel")
@@ -78,7 +83,7 @@ class RBPanel(Panel):
 
         self.rb_id_lbl = QLabel("RB Serial #: ")
         self.rb_id_field = QLineEdit()
-        self.rb_id_field.setFixedSize(130,50)
+        self.rb_id_field.setFixedSize(130,30)
         self.rb_id_row = QHBoxLayout()
         self.rb_id_row.addWidget(self.rb_id_lbl)
         self.rb_id_row.addWidget(self.rb_id_field)
@@ -91,7 +96,7 @@ class RBPanel(Panel):
         self.scroll_container.addItem("Select tests...")
         self.scroll_container.model().item(0, 0).setFlags(Qt.NoItemFlags)
         self.scroll_container.view().setRowHidden(0, True)
-        for key in self.rb_tests:
+        for key in self.rb_str_to_tests:
             self.scroll_container.addItem(key)
         
         self.test_select_lbl = QLabel("Tests: ")
