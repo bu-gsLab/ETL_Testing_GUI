@@ -21,22 +21,6 @@ if [ -f "module_test_sw/setup.sh" ]; then
     source "module_test_sw/setup.sh"
 fi
 
-# Create pyproject.toml for tamalero if missing (needed by uv)
-if [ ! -f "module_test_sw/pyproject.toml" ]; then
-    echo "Creating pyproject.toml for tamalero submodule..."
-    cat > module_test_sw/pyproject.toml << 'EOF'
-[project]
-name = "tamalero"
-version = "0.1.0"
-requires-python = ">=3.14"
-dependencies = []
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-EOF
-fi
-
 # Recreate uv env with system-site-packages so uHAL becomes visible
 echo "Creating virtual environment..."
 rm -rf .venv
