@@ -46,6 +46,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyle("Fusion") 
     app.setWindowIcon(QIcon(str(gui_dir / "icon.png")))
     window = MainWindow()
     window.show()
