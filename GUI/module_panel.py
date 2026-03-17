@@ -8,8 +8,8 @@ from PyQt5.QtWidgets import QPushButton, QFrame, QLabel, QLineEdit, QHBoxLayout,
 from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
-from panel import Panel
-from helpers.checkable_combobox import CheckableComboBox
+from .panel import Panel
+from .helpers.checkable_combobox import CheckableComboBox
 
 from etlup.tamalero import *
 

@@ -5,8 +5,8 @@ from PyQt5.QtCore import Qt, QTimer, QSize
 from PyQt5.QtGui import QIcon
 from pathlib import Path
 
-from coldbox_panel import ColdboxPanel
-from daq_panel import DAQPanel
+from .coldbox_panel import ColdboxPanel
+from .daq_panel import DAQPanel
 
 MAIN_DIR = Path(__file__).parent.parent
 gui_dir = MAIN_DIR / "GUI"

@@ -6,8 +6,8 @@ from PyQt5.QtGui import QIcon, QFont
 from pathlib import Path
 import threading
 
-from panel import Panel
-from rb_panel import RBPanel
+from .panel import Panel
+from .rb_panel import RBPanel
 
 from qaqc.session import Session
 

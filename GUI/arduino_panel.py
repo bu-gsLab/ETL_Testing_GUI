@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QGridLayout, QPushButton, QLabel, QHBoxLayout, QVBox
 from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
-from panel import Panel
+from .panel import Panel
 from drivers.Arduino.arduino_driver import Arduino
 
 class ArduinoPanel(Panel):

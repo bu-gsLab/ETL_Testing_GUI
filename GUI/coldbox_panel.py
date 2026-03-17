@@ -5,11 +5,11 @@ from PyQt5.QtCore import Qt, QTimer, QSize
 from PyQt5.QtGui import QIcon
 from pathlib import Path
 
-from arduino_panel import ArduinoPanel
-from chiller_panel import ChillerPanel
-from hv_panel import HVPanel
-from lv_panel import LVPanel
-from panel import Panel
+from .arduino_panel import ArduinoPanel
+from .chiller_panel import ChillerPanel
+from .hv_panel import HVPanel
+from .lv_panel import LVPanel
+from .panel import Panel
 
 class ColdboxPanel(Panel):
     def __init__(self, title="Coldbox Monitoring & Control"):

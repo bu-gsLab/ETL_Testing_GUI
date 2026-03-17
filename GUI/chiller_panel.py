@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLa
 from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
-from panel import Panel
+from .panel import Panel
 from drivers.Chiller.chiller_driver import Chiller
 
 class ChillerPanel(Panel):
