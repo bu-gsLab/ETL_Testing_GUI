@@ -6,17 +6,13 @@ import os
 
 from PyQt5.QtWidgets import QGridLayout, QPushButton, QLabel, QHBoxLayout, QVBoxLayout
 from pathlib import Path
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
-from panel import Panel
-
-MAIN_DIR = Path(__file__).parent.parent
-ard_dir = MAIN_DIR / "drivers" / "Arduino"
-sys.path.append(str(ard_dir))
-
-from arduino_driver import Arduino
+from .panel import Panel
+from drivers.Arduino.arduino_driver import Arduino
 
 class ArduinoPanel(Panel):
+    update_GUI_signal = pyqtSignal(dict)
     def __init__(self, title="Arduino"):
         super().__init__(title)
 
@@ -101,7 +97,7 @@ class ArduinoPanel(Panel):
 
         def make_label(text):
             lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 15))
+            lbl.setFont(QFont("Calibri", 12))
             return lbl
 
         self.ambtemp_lbl = make_label("Ambient Temp: --.-°C")
@@ -141,6 +137,9 @@ class ArduinoPanel(Panel):
         self.arduino = Arduino("/dev/arduino", baudrate=115200, timeout=1.0)
         self.sample_time = 2.5
 
+        # Create PyQt5 signal for updating GUI elements
+        self.update_GUI_signal.connect(self.update_GUI)
+
     def start_recording(self):
         if self.recording_thread != None:
             print("Recording thread already running")
@@ -150,15 +149,15 @@ class ArduinoPanel(Panel):
         try:
             self.arduino.connect()
             self.lbl_status.setText("Connected")
+            time.sleep(self.sample_time)
+            self.recorder_stop_evt.clear()
+            self.recording_thread = threading.Thread(target=self.record, daemon=True)
+            self.recording_thread.start()
+            self.btn_disconnect.setEnabled(True)
+            self.btn_connect.setEnabled(False)
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
 
-        time.sleep(self.sample_time)
-        self.recorder_stop_evt.clear()
-        self.recording_thread = threading.Thread(target=self.record, daemon=True)
-        self.recording_thread.start()
-        self.btn_disconnect.setEnabled(True)
-        self.btn_connect.setEnabled(False)
 
     def stop_recording(self):
         if self.recording_thread == None:
@@ -167,7 +166,6 @@ class ArduinoPanel(Panel):
 
         self.recorder_stop_evt.set()
         if self.recording_thread:
-            self.recording_thread.join(timeout=1)
             self.recording_thread = None
         if self.arduino:
             self.arduino.close()
@@ -186,57 +184,25 @@ class ArduinoPanel(Panel):
             self.btn_connect.setEnabled(True)
 
 
+    def update_GUI(self, data):
+        self.lbl_status.setText("Connected" if data['Connected'] else "Disconnected")
+        self.ambtemp_lbl.setText(f"Ambient Temp: {data['Ambient Temperature']}°C")
+        self.rH_lbl.setText(f"Relative Humidity: {data['Relative Humidity']}%")
+        self.dewpoint_lbl.setText(f"Dew Point: {data['Dewpoint']}°C")
+        self.dhtstatus_lbl.setText(f"DHT Status: {'OK' if data['DHT Status'] else 'FAULT'}")
+        self.door_lbl.setText(f"Door: {'OPEN' if data['Door Status'] else 'CLOSED'}")
+        self.leak_lbl.setText(f"Leak: {'OK' if data['Leak Status'] else 'LEAKING'}")
+        self.TC1_lbl.setText(f"TC1 Temp: {data['TC Temperatures'][0]}°C")
+        self.TC2_lbl.setText(f"TC2 Temp: {data['TC Temperatures'][1]}°C")
+        self.TC1_fault_lbl.setText(f"TC1 Faults: {', '.join(data['TC Faults'][0]) if data['TC Faults'][0] != 'No Faults' else 'No Faults'}")
+        self.TC2_fault_lbl.setText(f"TC2 Faults: {', '.join(data['TC Faults'][1]) if data['TC Faults'][1] != 'No Faults' else 'No Faults'}")
 
     def record(self):
         while not self.recorder_stop_evt.is_set():
             data = self.arduino.get_data()
+            self.update_GUI_signal.emit(data)
 
-            self.lbl_status.setText("Connected" if self.arduino.is_connected else "Disconnected")
-
-            # DHT
-            if self.arduino.ambtemp is not None:
-                self.ambtemp_lbl.setText(f"Ambient Temp: {self.arduino.ambtemp}°C")
-            else:
-                self.ambtemp_lbl.setText(f"Ambient Temp: {self.arduino.ambtemp}")
-
-            if self.arduino.rH is not None:
-                self.rH_lbl.setText(f"Relative Humidity: {self.arduino.rH}%")
-            else:
-                self.rH_lbl.setText(f"Relative Humidity: {self.arduino.rH}")
-            
-            if self.arduino.rH is not None and self.arduino.ambtemp is not None:
-                self.dewpoint_lbl.setText(f"Dew Point: {self.arduino.dewpoint}°C")
-            else:
-                self.dewpoint_lbl.setText(f"Dew Point: {self.arduino.dewpoint}")
-
-            self.dhtstatus_lbl.setText(f"DHT Status: {'OK' if self.arduino.dhtstatus else 'FAULT'}")
-
-            # Digital sensors
-            self.door_lbl.setText(f"Door: {'OPEN' if self.arduino.door else 'CLOSED'}")
-            self.leak_lbl.setText(f"Leak: {'OK' if self.arduino.leak else 'LEAKING'}")
-
-            # Thermocouples
-            if self.arduino.TCtemps[0] is not None:
-                self.TC1_lbl.setText(f"TC1 Temp: {self.arduino.TCtemps[0]}°C")
-            else:
-                self.TC1_lbl.setText(f"TC1 Temp: {self.arduino.TCtemps[0]}")
-
-            if self.arduino.TCfaults[0] == None:
-                self.TC1_fault_lbl.setText(f"TC1 Faults: N/A")
-            else:
-                self.TC1_fault_lbl.setText(f"TC1 Faults: {', '.join(self.arduino.TCfaults[0]) if self.arduino.TCfaults[0] != 'No Faults' else 'No Faults'}")
-            
-            if self.arduino.TCtemps[1] is not None:
-                self.TC2_lbl.setText(f"TC2 Temp: {self.arduino.TCtemps[1]}°C")
-            else:
-                self.TC2_lbl.setText(f"TC2 Temp: {self.arduino.TCtemps[1]}")
-
-            if self.arduino.TCfaults[1] == None:
-                self.TC2_fault_lbl.setText(f"TC2 Faults: N/A") 
-            else:
-                self.TC2_fault_lbl.setText(f"TC2 Faults: {', '.join(self.arduino.TCfaults[1]) if self.arduino.TCfaults[1] != 'No Faults' else 'No Faults'}") 
-
-            if not self.arduino.dhtstatus:
+            if not data["DHT Status"]:
                 print("Restarting DHT")
                 self.arduino.restart_dht()
                 time.sleep(1)

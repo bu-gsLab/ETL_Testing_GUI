@@ -28,7 +28,7 @@ def required(required_tests: List[TestType]):
         @functools.wraps(func)
         def wrapper(session, *args, **kwargs):
             for req in required_tests:
-                if req not in session.results:
+                if not any(req in d for d in session.results):
                     raise MissingRequiredTestError(f"Required test {req} was not run for {func.__name__}.")
             return func(session, *args, **kwargs)
         return wrapper

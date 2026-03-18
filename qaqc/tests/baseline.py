@@ -1,11 +1,12 @@
 import numpy as np
 from etlup.tamalero.Baseline import BaselineV0
+from etlup.tamalero.ReadoutBoardCommunication import ReadoutBoardCommunicationV0
 from qaqc import register, required
 from qaqc.errors import FailedTestCriteriaError
 from qaqc.session import Session
 
 @register(BaselineV0)
-@required(["ReadoutBoardCommunicationV0"])
+@required([ReadoutBoardCommunicationV0])
 def test(session: Session) -> BaselineV0:
     """
     Runs the baseline test.

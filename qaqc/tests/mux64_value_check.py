@@ -1,11 +1,12 @@
 from qaqc import register, required
 from qaqc.errors import FailedTestCriteriaError
-from etlup.tamalero.MUX64Values import MUX64ValuesV0
+from etlup.tamalero.Mux64Values import Mux64ValuesV0
+from etlup.tamalero.ReadoutBoardCommunication import ReadoutBoardCommunicationV0
 import yaml
 from pathlib import Path
 
-@register(MUX64ValuesV0)
-@required(["ReadoutBoardCommunicationV0"])
+@register(Mux64ValuesV0)
+@required([ReadoutBoardCommunicationV0])
 def test(session):
     """
     Reads all 64 MUX64 channels and verifies values are within expected range.
@@ -23,6 +24,8 @@ def test(session):
         mux_checks = []
         bad_pin_val_pairs = []
         for i in range(64):
+            if allowable_mux64_values[i]['description'] == "Unused":
+                continue
             val = rb.MUX64.read_adc(i, calibrate=False)
             mux_values.append(val)
 
@@ -49,4 +52,4 @@ def test(session):
         "mux64_bad_pin_val_pairs": bad_pin_val_pairs
     }
 
-    return MUX64ValuesV0(**data)
+    return Mux64ValuesV0(**data)

@@ -6,17 +6,14 @@ import os
 
 from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout
 from pathlib import Path
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
-from panel import Panel
-
-MAIN_DIR = Path(__file__).parent.parent
-lv_dir = MAIN_DIR / "drivers" / "LV"
-sys.path.append(str(lv_dir))
-
-from lv_driver import LVPowerSupply
+from .panel import Panel
+from drivers.LV.lv_driver import LVPowerSupply
 
 class LVPanel(Panel):
+
+    update_GUI_signal = pyqtSignal(dict)
     def __init__(self, title="LV Supply"):
         super().__init__(title)
         
@@ -100,7 +97,7 @@ class LVPanel(Panel):
 
         def make_label(text):
             lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 15))
+            lbl.setFont(QFont("Calibri", 12))
             return lbl
         
         channel_row = QHBoxLayout()
@@ -176,8 +173,28 @@ class LVPanel(Panel):
 
         self.subgrid.addLayout(main_layout, 1, 0, 5, 5, Qt.AlignTop)
         self.sample_time = 0.5
+
+        self.data = {}
+        self.update_GUI_signal.connect(self.update_GUI)
+        self.cmd_lock = threading.Lock()
         self.cmd_waiting = False
         self.cmd = None
+
+
+    def update_GUI(self, data):
+        if data["output"]:
+            self.lbl_channel.setText("OUTPUT: ON")
+            self.btn_channel_off.setEnabled(True)
+            self.btn_channel_on.setEnabled(False)
+        else:
+            self.lbl_channel.setText("OUTPUT: OFF")
+            self.btn_channel_off.setEnabled(False)
+            self.btn_channel_on.setEnabled(True)
+
+        self.lbl_set_voltage.setText(f"VSET: {data['vset']} V")
+        self.lbl_set_current.setText(f"ISET: {data['iset']} A")
+        self.lbl_mon_voltage.setText(f"VMON: {data['vmon']} V")
+        self.lbl_mon_current.setText(f"IMON: {data['imon']} A")
 
 
 
@@ -191,15 +208,14 @@ class LVPanel(Panel):
             # TODO: Add more channels
             self.lv = LVPowerSupply("192.168.0.30", channel=1)
             self.lbl_status.setText("Connected")
-        except serial.SerialException as e:
-            print(f"Failed to connect: {e}")
-        
-        self.lv_stop_evt.clear()
-        self.lv_thread = threading.Thread(target=self.lv_run, daemon=True)
-        self.lv_thread.start()
-        self.btn_disconnect.setEnabled(True)
-        self.btn_connect.setEnabled(False)
-        time.sleep(self.sample_time)
+            self.lv_stop_evt.clear()
+            self.lv_thread = threading.Thread(target=self.lv_run, daemon=True)
+            self.lv_thread.start()
+            self.btn_disconnect.setEnabled(True)
+            self.btn_connect.setEnabled(False)
+            time.sleep(self.sample_time)
+        except Exception as e:
+            print(f"Connection failed: {e}")
    
     def stop_lv(self):
         if self.lv_thread == None:
@@ -208,15 +224,14 @@ class LVPanel(Panel):
         
         self.lv_stop_evt.set()
         if self.lv_thread:
-            self.lv_thread.join()
             self.lv_thread = None
         if self.lv:
             self.lv.close()
             self.lbl_status.setText("Disconnected")
             self.lbl_set_voltage.setText("VSET: --- V")
-            self.lbl_set_current.setText("ISET: ---.- uA")
+            self.lbl_set_current.setText("ISET: ---.- A")
             self.lbl_mon_voltage.setText("VMON: --- V")
-            self.lbl_mon_current.setText("IMON: ---.- uA")
+            self.lbl_mon_current.setText("IMON: ---.- A")
             self.lbl_channel.setText("OUTPUT: ---")
             self.btn_disconnect.setEnabled(False)
             self.btn_connect.setEnabled(True)
@@ -224,83 +239,95 @@ class LVPanel(Panel):
 
     def lv_run(self):
         while not self.lv_stop_evt.is_set():
-            if not self.cmd_waiting:
-                self.vset = self.lv.read_vset()
-                self.vmon = self.lv.read_vmon()
-                self.iset = self.lv.read_iset()
-                self.imon = self.lv.read_imon()
-                self.status = self.lv.read_status()
-                self.output = self.status & 2**4
+            with self.cmd_lock:
+                cmd = self.cmd
+                waiting = self.cmd_waiting
+                if waiting:
+                    self.cmd_waiting = False
+                    self.cmd = None
 
-                if self.output:
-                    self.lbl_channel.setText("OUTPUT: ON")
-                    self.btn_channel_off.setEnabled(True)
-                    self.btn_channel_on.setEnabled(False)
-                else:
-                    self.lbl_channel.setText("OUTPUT: OFF")
-                    self.btn_channel_off.setEnabled(False)
-                    self.btn_channel_on.setEnabled(True)
-
-                self.lbl_set_voltage.setText(f"VSET: {self.vset} V")
-                self.lbl_set_current.setText(f"ISET: {self.iset} A")
-                self.lbl_mon_voltage.setText(f"VMON: {self.vmon} V")
-                self.lbl_mon_current.setText(f"IMON: {self.imon} A")
-                if self.log_status:
-                    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
-                    maindir = Path(__file__).parent.parent
-
-                    resultdir = maindir / "Environmental Data" / "LV Supply Data"
-                    if not os.path.isdir(resultdir):
-                        os.makedirs(resultdir)
-
-                    resultdir.mkdir(exist_ok=True)
-
-                    outfile = resultdir / f"LV_supply_data_{self.log_timestamp}.csv"
-
-                    data = {"OUTPUT": self.output, "VSET": self.vset, "VMON": self.vmon, "ISET": self.iset, "IMON": self.imon, "Status": self.status}
-                    with open(outfile, 'a') as f:
-                        f.write(f"{timestamp}: {data}\n")
-            else:
-                if self.cmd == "vset":
+            if waiting:
+                if cmd[0] == "vset":
                     try:
-                        value = float(self.set_voltage_field.text())
+                        value = cmd[1]
                         self.lv.set_voltage(value)
                     except Exception as e:
                         print(f"Error: {e}")
-                        self.set_voltage_field.clear()
-                    self.set_voltage_field.clear()
-                
-                elif self.cmd == "iset":
+                elif cmd[0] == "iset":
                     try:
-                        value = float(self.set_current_field.text())
+                        value = cmd[1]
                         self.lv.set_current_limit(value)
                     except Exception as e:
                         print(f"Error: {e}")
-                        self.set_current_field.clear()
-                    self.set_current_field.clear()
-
-                elif self.cmd == "channel":
+                elif cmd[0] == "channel":
                     if self.output:
                         self.lv.set_channel_off()
                     else:
                         self.lv.set_channel_on()
-                
-                
-                self.cmd_waiting = False
-                self.cmd = None
+
+            self.vset = self.lv.read_vset()
+            self.vmon = self.lv.read_vmon()
+            self.iset = self.lv.read_iset()
+            self.imon = self.lv.read_imon()
+            self.status = self.lv.read_status()
+            self.output = self.status & 2**4
+
+            self.data["vset"] = self.vset
+            self.data["vmon"] = self.vmon
+            self.data["iset"] = self.iset
+            self.data["imon"] = self.imon
+            self.data["status"] = self.status
+            self.data["output"] = self.output
+
+            self.update_GUI_signal.emit(self.data)
+
+            if self.log_status:
+                timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
+                maindir = Path(__file__).parent.parent
+
+                resultdir = maindir / "Environmental Data" / "LV Supply Data"
+                if not os.path.isdir(resultdir):
+                    os.makedirs(resultdir)
+
+                resultdir.mkdir(exist_ok=True)
+
+                outfile = resultdir / f"LV_supply_data_{self.log_timestamp}.csv"
+
+                data = {"OUTPUT": self.output, "VSET": self.vset, "VMON": self.vmon, "ISET": self.iset, "IMON": self.imon, "Status": self.status}
+                with open(outfile, 'a') as f:
+                    f.write(f"{timestamp}: {data}\n")
+
             time.sleep(self.sample_time)
 
     def set_voltage(self):
-        self.cmd_waiting = True
-        self.cmd = "vset"
+        try:
+            value = float(self.set_voltage_field.text())
+        except ValueError:
+            print("Invalid set voltage")
+            return
+
+        with self.cmd_lock:
+            self.cmd_waiting = True
+            self.cmd = ["vset", value]
+        self.set_voltage_field.clear()
 
     def set_current(self):
-        self.cmd_waiting = True
-        self.cmd = "iset"
+        try:
+            value = float(self.set_current_field.text())
+        except ValueError:
+            print("Invalid set current")
+            return
+        
+        with self.cmd_lock:
+            self.cmd_waiting = True
+            self.cmd = ["iset", value]
+        self.set_current_field.clear()
+
     
     def set_channel(self):
-        self.cmd_waiting = True
-        self.cmd = "channel"
+        with self.cmd_lock:
+            self.cmd_waiting = True
+            self.cmd = ["channel"]
 
     def toggle_log(self):
         self.log_status = not self.log_status

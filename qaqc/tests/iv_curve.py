@@ -1,9 +1,10 @@
 from qaqc import register, required
 from qaqc.errors import FailedTestCriteriaError
+''' comment until added to etlup
 from etlup.IVCurve import IVCurveV0
 from pathlib import Path
 import yaml
-from ...drivers.HV.hv_driver import HVPowerSupply
+from drivers.HV.hv_driver import HVPowerSupply
 
 @register(IVCurveV0)
 # FIXME: The shortest test that checks ETROC connection and powers it on should be required below
@@ -50,3 +51,4 @@ def test(session):
     }
 
     return IVCurveV0(**data)
+'''

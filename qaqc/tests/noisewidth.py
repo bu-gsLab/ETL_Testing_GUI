@@ -1,10 +1,13 @@
 import numpy as np
 from etlup.tamalero.Noisewidth import NoisewidthV0
 from qaqc import register, required
-from etlup.tamalero import Baseline
+from etlup.tamalero.Baseline import BaselineV0
+from etlup.tamalero.ReadoutBoardCommunication import ReadoutBoardCommunicationV0
+
+
 
 @register(NoisewidthV0)
-@required(["ReadoutBoardCommunicationV0", Baseline.BaselineV0])
+@required([ReadoutBoardCommunicationV0, BaselineV0])
 def test(session) -> NoisewidthV0:
     """
     Runs the baseline test.
