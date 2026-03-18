@@ -42,6 +42,7 @@ class MainWindow(QMainWindow):
 
         self.tabs.addTab(self.DAQ_tab, "DAQ")
         self.tabs.addTab(self.coldbox_tab, "Coldbox")
+        self.tabs.setStyleSheet("QTabBar::tab { color: white; }")
 
 
 if __name__ == "__main__":
