@@ -1,3 +1,3 @@
 [submodule "module_test_sw"]
 	path = module_test_sw
-	url = git@github.com:Bobby-21/Tamalero.git
+	url = https://gitlab.cern.ch/cms-etl-electronics/module_test_sw.git
