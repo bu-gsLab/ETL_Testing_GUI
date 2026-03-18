@@ -27,7 +27,9 @@ fi
 echo "Creating virtual environment..."
 rm -rf .venv
 uv cache clean
-uv python pin "/usr/local/bin/python3.14"
+uv self update
+uv python install 3.14.2
+uv python pin 3.14.2
 uv venv --system-site-packages
 
 # Sync all project dependencies
