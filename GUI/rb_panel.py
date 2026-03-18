@@ -16,6 +16,7 @@ from etlup.tamalero import *
 
 class RBPanel(Panel):
     run_tests_signal = pyqtSignal(object)
+    kill_tests_signal = pyqtSignal(object)
     def __init__(self, rb_pos):
         self.rb_pos = rb_pos
         self.rb_size = 3
@@ -116,10 +117,17 @@ class RBPanel(Panel):
 
         self.test_btn = QPushButton("Run Tests")
         self.test_btn.clicked.connect(self.run_tests)
-        self.test_btn.setObjectName("redButton")
+        self.test_btn.setObjectName("greenButton")
+
+        self.kill_test_btn = QPushButton("E-Stop")
+        self.kill_test_btn.clicked.connect(self.kill_tests)
+        self.kill_test_btn.setObjectName("redButton")
+        self.kill_test_btn.setEnabled(False)
+
         self.test_btn_row = QHBoxLayout()
         self.test_btn_row.addStretch()
         self.test_btn_row.addWidget(self.test_btn)
+        self.test_btn_row.addWidget(self.kill_test_btn)
         self.test_btn_row.addStretch()
 
         main_layout.addLayout(self.rb_id_row)
@@ -133,5 +141,5 @@ class RBPanel(Panel):
     def run_tests(self):
         self.run_tests_signal.emit(self)
 
-
-    
+    def kill_tests(self):
+        self.kill_tests_signal.emit(self)

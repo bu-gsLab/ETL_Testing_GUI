@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QSplitter, QVBoxLayout, QFrame, QLabel, QLineEdit
-from PyQt5.QtCore import Qt, QTimer, QSize
+from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon, QFont
 from pathlib import Path
 import threading
@@ -12,6 +12,7 @@ from .rb_panel import RBPanel
 from qaqc.session import Session
 
 class DAQPanel(Panel):
+    finish_tests_signal = pyqtSignal(object)
     def __init__(self, title="Data Acquisition and Testing"):
         super().__init__(title)
         self.setStyleSheet("""
@@ -87,9 +88,14 @@ class DAQPanel(Panel):
         self.rb1.run_tests_signal.connect(self.create_session)
         self.rb2.run_tests_signal.connect(self.create_session)
 
+        self.rb1.kill_tests_signal.connect(self.kill_thread)
+        self.rb2.kill_tests_signal.connect(self.kill_thread)
+
         mainlayout = QVBoxLayout()
         mainlayout.addLayout(self.kcu_row)
         mainlayout.addLayout(self.rb_layout)
+
+        self.finish_tests_signal.connect(self.finish_tests)
 
         self.session = None
 
@@ -117,40 +123,64 @@ class DAQPanel(Panel):
         self.daq_stop_evt = threading.Event()
 
         self.daq_stop_evt.clear()
-        self.daq_thread = threading.Thread(target=self.run_tests, daemon=True, args=(rb_obj,modules,))
+        self.daq_thread = threading.Thread(target=self.run_tests, args=(rb_obj,modules,))
         self.daq_thread.start()
+        rb_obj.test_btn.setEnabled(False)
+        rb_obj.kill_test_btn.setEnabled(True)
+    
+    def kill_thread(self, rb_obj):
+        if self.daq_stop_evt:
+            self.daq_stop_evt.set()
     
     def run_tests(self, rb_obj, modules):
-        print(f"Running tests on RB{rb_obj.rb_pos}")
-        rb_tests_str = rb_obj.scroll_container.getCheckedItems()
-        rb_tests = []
-        # Convert string to etlup test object
-        for i in range(len(rb_tests_str)):
-            rb_tests.append(rb_obj.rb_str_to_tests[rb_tests_str[i]])
+        abort = False
+        try:
+            print(f"Running tests on RB{rb_obj.rb_pos}")
+            rb_tests_str = rb_obj.scroll_container.getCheckedItems()
+            rb_tests = []
+            # Convert string to etlup test object
+            for i in range(len(rb_tests_str)):
+                rb_tests.append(rb_obj.rb_str_to_tests[rb_tests_str[i]])
 
-        for i in range(len(modules)):
-            if modules[i] is None:
-                continue
+            for i in range(len(modules)):
+                if abort:
+                    break
+                if modules[i] is None:
+                    continue
 
-            mod_tests_str = rb_obj.modules[i].scroll_container.getCheckedItems()
+                mod_tests_str = rb_obj.modules[i].scroll_container.getCheckedItems()
 
-            mod_tests = []
-            for j in range(len(mod_tests_str)):
-                mod_tests.append(rb_obj.modules[i].module_str_to_tests[mod_tests_str[j]])
+                mod_tests = []
+                for j in range(len(mod_tests_str)):
+                    mod_tests.append(rb_obj.modules[i].module_str_to_tests[mod_tests_str[j]])
 
-            test_sequence_str = rb_tests_str + mod_tests_str
-            test_sequence = rb_tests + mod_tests
+                test_sequence_str = rb_tests_str + mod_tests_str
+                test_sequence = rb_tests + mod_tests
 
-            print(f"Slot {i+1} Tests: {test_sequence_str}")
-            print("Starting test sequence...")
-            for test, result in self.session.iter_test_sequence(test_sequence, slot=i):
-                if test.model in rb_obj.rb_tests_to_str:
-                    test_str = rb_obj.rb_tests_to_str[test.model]
-                else:
-                    test_str = rb_obj.modules[i].module_tests_to_str[test.model]
-                if isinstance(result, Exception):
-                    print(f"{test_str} test failed: {result}")
-                else:
-                    print(f"{test_str} test passed")
+                print(f"Slot {i+1} Tests: {test_sequence_str}")
+                print("Starting test sequence...")
+                for test, result in self.session.iter_test_sequence(test_sequence, slot=i):
+                    if self.daq_stop_evt.is_set():
+                        abort = True
+                        print("E-stop pressed, aborting")
+                        break
+                    if test.model in rb_obj.rb_tests_to_str:
+                        test_str = rb_obj.rb_tests_to_str[test.model]
+                    else:
+                        test_str = rb_obj.modules[i].module_tests_to_str[test.model]
+                    if isinstance(result, Exception):
+                        print(f"{test_str} test failed: {result}")
+                    else:
+                        print(f"{test_str} test passed")
+        except Exception as e:
+            print(f"Test thread crashed: {e}")
+        finally:
+            self.finish_tests_signal.emit(rb_obj)
 
-        self.daq_stop_evt.set()
+
+    def finish_tests(self, rb_obj):
+        self.daq_thread = None
+        self.daq_stop_evt = None
+
+        rb_obj.test_btn.setEnabled(True)
+        rb_obj.kill_test_btn.setEnabled(False)
