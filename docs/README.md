@@ -30,20 +30,13 @@ For detailed instructions and documentation on the mechanical, electrical, therm
 
 ## Installation
 
-### Note: Many steps require sudo privileges
+### Note: Some steps require sudo privileges
 
 The following instructions were adapted from [this original SOP](./ETL_test_stand_setup.md), which you should refer to if any step is unclear.
 
 ### Cloning the repo
 
-To clone this repo, please run `git clone --recurse-submodules <repo url>`. First check that the submodule branch is on `origin/dev-RBFv2`. You can do this by running the following.
-
-```bash
-cd module_test_sw/
-git branch
-```
-
-If it is not on `origin/dev-RBFv2`, then run `git checkout origin/dev-RBFv2` while in the submodule.
+To clone this repo, please run `git clone --recurse-submodules <repo url>`. It is necessary to run with the `--recurse-submodules` flag so that Tamalero (which is imported as a submodule) is properly cloned inside the repo.
 
 ### Vivado installation
 
@@ -55,16 +48,27 @@ To download the IPbus software, move to the `scripts/` directory and run `source
 
 ### General setup
 
-Move to the `scripts/` directory and run `source setup_env.sh`. This does the following:
-- Downloads uv, the python dependency manager, and sets up the python environment for the project
-- Sets up the python path for Tamalero
+First, you need to setup the virtual environment, for which we are using Astral's uv. To set this up, navigate to the project root directory and run
+
+```source scripts/setup_env.sh```
+
+This script does the following:
+- Downloads uv if not already installed
+- Sets up pathing for Tamalero
+- Creates virtual environment with uv
+    - Removes existing uv venv
+    - Cleans cache
+    - Updates uv to latest version
+    - Installs and pins python version (3.14.2)
+    - Initializes venv and installs project dependencies
 - Adds Vivado to path if not already
-- Installs Xilinx cable drivers
 
 ### Flashing firmware
 You can follow the directions here on the [rbdocs](https://etl-rb.docs.cern.ch/Firmware/rb-firmware/#firmware-for-kcu-105)
 
 ## User's Guide
+
+To run the GUI, navigate to the project root directory and run `uv run -m GUI.app`. Make sure you have already set up the uv venv. 
 
 ## Contact
 
