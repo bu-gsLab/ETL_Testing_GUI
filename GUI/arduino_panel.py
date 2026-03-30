@@ -13,6 +13,7 @@ from drivers.Arduino.arduino_driver import Arduino
 
 class ArduinoPanel(Panel):
     update_GUI_signal = pyqtSignal(dict)
+    disconnect_signal = pyqtSignal()
     def __init__(self, title="Arduino"):
         super().__init__(title)
 
@@ -137,8 +138,10 @@ class ArduinoPanel(Panel):
         self.arduino = Arduino("/dev/arduino", baudrate=115200, timeout=1.0)
         self.sample_time = 2.5
 
-        # Create PyQt5 signal for updating GUI elements
+        # Create PyQt5 signal for updating GUI elements and stopping thread
         self.update_GUI_signal.connect(self.update_GUI)
+        self.disconnect_signal.connect(self.stop_recording)
+
 
     def start_recording(self):
         if self.recording_thread != None:
@@ -165,23 +168,11 @@ class ArduinoPanel(Panel):
             return
 
         self.recorder_stop_evt.set()
-        if self.recording_thread:
-            self.recording_thread = None
+        
         if self.arduino:
             self.arduino.close()
-            self.lbl_status.setText("Disconnected")
-            self.ambtemp_lbl.setText("Ambient Temp: --.-°C")
-            self.rH_lbl.setText("Relative Humidity: --.-%")
-            self.dewpoint_lbl.setText("Dew Point: --.-°C")
-            self.dhtstatus_lbl.setText("DHT Status: --")
-            self.door_lbl.setText("Door: --")
-            self.leak_lbl.setText("Leak: --")
-            self.TC1_lbl.setText("TC1 Temp: --.-°C")
-            self.TC1_fault_lbl.setText("TC1 Faults: --")
-            self.TC2_lbl.setText("TC2 Temp: --.-°C")
-            self.TC2_fault_lbl.setText("TC2 Faults: --")
-            self.btn_disconnect.setEnabled(False)
-            self.btn_connect.setEnabled(True)
+        
+        self.reset_GUI()
 
 
     def update_GUI(self, data):
@@ -197,30 +188,52 @@ class ArduinoPanel(Panel):
         self.TC1_fault_lbl.setText(f"TC1 Faults: {', '.join(data['TC Faults'][0]) if data['TC Faults'][0] != 'No Faults' else 'No Faults'}")
         self.TC2_fault_lbl.setText(f"TC2 Faults: {', '.join(data['TC Faults'][1]) if data['TC Faults'][1] != 'No Faults' else 'No Faults'}")
 
+    def reset_GUI(self):
+        self.recording_thread = None
+        self.lbl_status.setText("Disconnected")
+        self.ambtemp_lbl.setText("Ambient Temp: --.-°C")
+        self.rH_lbl.setText("Relative Humidity: --.-%")
+        self.dewpoint_lbl.setText("Dew Point: --.-°C")
+        self.dhtstatus_lbl.setText("DHT Status: --")
+        self.door_lbl.setText("Door: --")
+        self.leak_lbl.setText("Leak: --")
+        self.TC1_lbl.setText("TC1 Temp: --.-°C")
+        self.TC1_fault_lbl.setText("TC1 Faults: --")
+        self.TC2_lbl.setText("TC2 Temp: --.-°C")
+        self.TC2_fault_lbl.setText("TC2 Faults: --")
+        self.btn_disconnect.setEnabled(False)
+        self.btn_connect.setEnabled(True)
+
     def record(self):
         while not self.recorder_stop_evt.is_set():
-            data = self.arduino.get_data()
-            self.update_GUI_signal.emit(data)
+            try:
+                data = self.arduino.get_data()
+        
+                self.update_GUI_signal.emit(data)
 
-            if not data["DHT Status"]:
-                print("Restarting DHT")
-                self.arduino.restart_dht()
-                time.sleep(1)
+                if not data["DHT Status"]:
+                    print("Restarting DHT")
+                    self.arduino.restart_dht()
+                    time.sleep(1)
 
-            if self.log_status:
-                timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
-                maindir = Path(__file__).parent.parent
+                if self.log_status:
+                    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
+                    maindir = Path(__file__).parent.parent
 
-                resultdir = maindir / "Environmental Data" / "Arduino Data"
-                if not os.path.isdir(resultdir):
-                    os.makedirs(resultdir)
+                    resultdir = maindir / "Environmental Data" / "Arduino Data"
+                    if not os.path.isdir(resultdir):
+                        os.makedirs(resultdir)
 
-                resultdir.mkdir(exist_ok=True)
+                    resultdir.mkdir(exist_ok=True)
 
-                outfile = resultdir / f"sensor_data_{self.log_timestamp}.csv"
-                with open(outfile, 'a') as f:
-                    f.write(f"{timestamp}: {data}\n")
-            time.sleep(self.sample_time)
+                    outfile = resultdir / f"sensor_data_{self.log_timestamp}.csv"
+                    with open(outfile, 'a') as f:
+                        f.write(f"{timestamp}: {data}\n")
+                time.sleep(self.sample_time)
+            except Exception as e:
+                print(f"Error during recording: {e}")
+                self.disconnect_signal.emit()
+                break
 
     def toggle_log(self):
         self.log_status = not self.log_status
