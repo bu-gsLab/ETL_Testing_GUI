@@ -14,6 +14,7 @@ from drivers.Arduino.arduino_driver import Arduino
 class ArduinoPanel(Panel):
     update_GUI_signal = pyqtSignal(dict)
     disconnect_signal = pyqtSignal()
+    error_signal = pyqtSignal()
     def __init__(self, title="Arduino"):
         super().__init__(title)
 
@@ -141,6 +142,7 @@ class ArduinoPanel(Panel):
         # Create PyQt5 signal for updating GUI elements and stopping thread
         self.update_GUI_signal.connect(self.update_GUI)
         self.disconnect_signal.connect(self.stop_recording)
+        self.error_signal.connect(self.error_GUI)
 
 
     def start_recording(self):
@@ -150,12 +152,12 @@ class ArduinoPanel(Panel):
         
         self.recorder_stop_evt = threading.Event()
         try:
-            self.arduino.connect()
-            self.lbl_status.setText("Connected")
+            print(f"Arduino connected: {self.arduino.connect()}")
             time.sleep(self.sample_time)
             self.recorder_stop_evt.clear()
             self.recording_thread = threading.Thread(target=self.record, daemon=True)
             self.recording_thread.start()
+            self.lbl_status.setText("Connected")
             self.btn_disconnect.setEnabled(True)
             self.btn_connect.setEnabled(False)
         except serial.SerialException as e:
@@ -163,19 +165,34 @@ class ArduinoPanel(Panel):
 
 
     def stop_recording(self):
+
         if self.recording_thread == None:
             print("Recording thread not running")
             return
 
         self.recorder_stop_evt.set()
-        
+
         if self.arduino:
             self.arduino.close()
         
         self.reset_GUI()
 
+    def error_GUI(self):
+        self.ambtemp_lbl.setText("Ambient Temp: --.-°C")
+        self.rH_lbl.setText("Relative Humidity: --.-%")
+        self.dewpoint_lbl.setText("Dew Point: --.-°C")
+        self.dhtstatus_lbl.setText("DHT Status: --")
+        self.door_lbl.setText("Door: --")
+        self.leak_lbl.setText("Leak: --")
+        self.TC1_lbl.setText("TC1 Temp: --.-°C")
+        self.TC1_fault_lbl.setText("TC1 Faults: --")
+        self.TC2_lbl.setText("TC2 Temp: --.-°C")
+        self.TC2_fault_lbl.setText("TC2 Faults: --")
 
     def update_GUI(self, data):
+        if data == None:
+            self.error_signal.emit()
+            return
         self.lbl_status.setText("Connected" if data['Connected'] else "Disconnected")
         self.ambtemp_lbl.setText(f"Ambient Temp: {data['Ambient Temperature']}°C")
         self.rH_lbl.setText(f"Relative Humidity: {data['Relative Humidity']}%")
