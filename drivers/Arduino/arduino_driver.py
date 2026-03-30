@@ -79,12 +79,12 @@ class Arduino:
             if TC1faultbyte == 0:
                 self.TCfaults[0] = "No Faults"
             else:
-                self.TCfaults[0] = [name for i, name in enumerate(self.TCFaultNames) if (TC1faultbyte & (1 << i))].join(", ")
+                self.TCfaults[0] = [name for i, name in enumerate(self.TCFaultNames) if (TC1faultbyte & (1 << i))]
 
             if TC2faultbyte == 0:
                 self.TCfaults[1] = "No Faults"
             else:
-                self.TCfaults[1] = [name for i, name in enumerate(self.TCFaultNames) if (TC2faultbyte & (1 << i))].join(", ")
+                self.TCfaults[1] = [name for i, name in enumerate(self.TCFaultNames) if (TC2faultbyte & (1 << i))]
 
             self.ambtemp = float(data_list[7])
             self.rH = float(data_list[8])
@@ -118,7 +118,7 @@ class Arduino:
                 if TC1faultbyte == 0:
                     self.TCfaults[0] = "No Faults"
                 else:
-                    self.TCfaults[0] = [name for i, name in enumerate(self.TCFaultNames) if (TC1faultbyte & (1 << i))].join(", ")
+                    self.TCfaults[0] = [name for i, name in enumerate(self.TCFaultNames) if (TC1faultbyte & (1 << i))]
             else: 
                 self.TCfaults[0] = None
                 
@@ -132,7 +132,7 @@ class Arduino:
                 if TC2faultbyte == 0:
                     self.TCfaults[1] = "No Faults"
                 else:
-                    self.TCfaults[1] = [name for i, name in enumerate(self.TCFaultNames) if (TC2faultbyte & (1 << i))].join(", ")
+                    self.TCfaults[1] = [name for i, name in enumerate(self.TCFaultNames) if (TC2faultbyte & (1 << i))]
             else:
                 self.TCfaults[1] = None
 
