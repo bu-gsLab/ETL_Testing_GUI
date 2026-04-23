@@ -178,12 +178,12 @@ class ChillerPanel(Panel):
             self.chiller_thread = None
         if self.chiller:
             self.chiller.close()
-            self.lbl_status.setText("Disconnected")
-            self.lbl_power.setText("Power: ---")
-            self.lbl_set_temp.setText("Set Temp: --- °C")
-            self.lbl_curr_temp.setText("Current Temp: --- °C")
-            self.btn_disconnect.setEnabled(False)
-            self.btn_connect.setEnabled(True)
+        self.lbl_status.setText("Disconnected")
+        self.lbl_power.setText("Power: ---")
+        self.lbl_set_temp.setText("Set Temp: --- °C")
+        self.lbl_curr_temp.setText("Current Temp: --- °C")
+        self.btn_disconnect.setEnabled(False)
+        self.btn_connect.setEnabled(True)
 
     def power_on(self):
         with self.cmd_lock:
@@ -233,7 +233,7 @@ class ChillerPanel(Panel):
                 if cmd[0] == "set_temp":
                     try:
                         value = cmd[1]
-                        self.chiller.set_work_temp(value)
+                        self.chiller.set_work_temperature(value)
                     except Exception as e:
                         print(f"Error: {e}")
                 elif cmd[0] == "power_on":
