@@ -73,11 +73,13 @@ class ChillerPanel(Panel):
         self.btn_connect.setObjectName("greenButton")
         self.btn_connect.clicked.connect(self.start_chiller)
         self.btn_connect.setEnabled(True)
+        self.btn_connect.setVisible(True)
 
         self.btn_disconnect = QPushButton("Disconnect")
         self.btn_disconnect.setObjectName("redButton")
         self.btn_disconnect.clicked.connect(self.stop_chiller)
         self.btn_disconnect.setEnabled(False)
+        self.btn_disconnect.setVisible(False)
 
         self.lbl_status = QLabel("Disconnected")
 
@@ -163,12 +165,16 @@ class ChillerPanel(Panel):
             self.chiller_thread = threading.Thread(target=self.chiller_run, daemon=True)
             self.chiller_thread.start()
             self.btn_disconnect.setEnabled(True)
+            self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
+            self.btn_connect.setVisible(False)
+
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
     
     
     def stop_chiller(self):
+        time.sleep(self.sample_time)
         if self.chiller_thread == None:
             print("Chiller thread not running")
             return
@@ -183,7 +189,9 @@ class ChillerPanel(Panel):
         self.lbl_set_temp.setText("Set Temp: --- °C")
         self.lbl_curr_temp.setText("Current Temp: --- °C")
         self.btn_disconnect.setEnabled(False)
+        self.btn_disconnect.setVisible(False)
         self.btn_connect.setEnabled(True)
+        self.btn_connect.setVisible(True)
 
     def power_on(self):
         with self.cmd_lock:

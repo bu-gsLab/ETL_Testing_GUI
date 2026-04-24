@@ -9,6 +9,7 @@ from etlup.tamalero.ReadoutBoardCommunication import ReadoutBoardCommunicationV0
 from qaqc import register, required
 from qaqc.errors import FailedTestCriteriaError
 from qaqc.session import Session
+from drivers.HV.hv_driver import HVPowerSupply
 
 @register(BaselineV0)
 @required([ReadoutBoardCommunicationV0])
@@ -58,22 +59,31 @@ def test(session) -> BaselineV0:
     rb.disable_MUX64()
     etroc_vtemps = []
     etroc_baselines = []
+
+    hv = HVPowerSupply("hv_supply")  
     
-    for etroc in module.ETROCs:
-        etroc_vtemps.append(etroc.check_temp())
-        if not etroc.is_connected():
-            print(f"ETROC {etroc.chip_no} not found")
-            etroc_vtemps.append(None)
-            etroc_baselines.append(np.zeros((16,16)).tolist())
-            continue
-            
-        print(f"Found connected ETROC {etroc.chip_no} on module")
+    with hv:
+        hv.set_voltage(50)
+        hv.set_current_limit(40)
+        hv.set_channel_on()
+        hv.wait_ramp(0.5)
 
-        etroc.run_etroc_team_threshold_scan(skip_config=True)
+        for etroc in module.ETROCs:
+            etroc_vtemps.append(etroc.check_temp())
+            if not etroc.is_connected():
+                print(f"ETROC {etroc.chip_no} not found")
+                etroc_vtemps.append(None)
+                etroc_baselines.append(np.zeros((16,16)).tolist())
+                continue
+                
+            print(f"Found connected ETROC {etroc.chip_no} on module")
 
-        etroc.plot_threshold(outdir=result_dir, noise_width=False)
-        etroc.plot_threshold(outdir=result_dir, noise_width=True)
-        etroc_baselines.append(etroc.baseline.tolist())
+            etroc.run_etroc_team_threshold_scan(skip_config=True)
+
+            etroc.plot_threshold(outdir=result_dir, noise_width=False)
+            etroc.plot_threshold(outdir=result_dir, noise_width=True)
+            etroc_baselines.append(etroc.baseline.tolist())
+        # HV already set to ramp down and turn off upon exit
 
     
     data = session.current_base_data | {
@@ -83,7 +93,7 @@ def test(session) -> BaselineV0:
         "etroc_1_Vtemp": etroc_vtemps[1],
         "etroc_2_Vtemp": etroc_vtemps[2],
         "etroc_3_Vtemp": etroc_vtemps[3],
-        "bias_volts": 0,
+        "bias_volts": 50,
         "pos_0": etroc_baselines[0],
         "pos_1": etroc_baselines[1],
         "pos_2": etroc_baselines[2],

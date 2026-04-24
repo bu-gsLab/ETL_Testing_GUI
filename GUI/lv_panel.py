@@ -74,11 +74,13 @@ class LVPanel(Panel):
         self.btn_connect.setObjectName("greenButton")
         self.btn_connect.clicked.connect(self.start_lv)
         self.btn_connect.setEnabled(True)
+        self.btn_connect.setVisible(True)
 
         self.btn_disconnect = QPushButton("Disconnect")
         self.btn_disconnect.setObjectName("redButton")
         self.btn_disconnect.clicked.connect(self.stop_lv)
         self.btn_disconnect.setEnabled(False)
+        self.btn_disconnect.setVisible(False)
 
         self.lbl_status = QLabel("Disconnected")
 
@@ -212,7 +214,9 @@ class LVPanel(Panel):
             self.lv_thread = threading.Thread(target=self.lv_run, daemon=True)
             self.lv_thread.start()
             self.btn_disconnect.setEnabled(True)
+            self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
+            self.btn_connect.setVisible(False)
             time.sleep(self.sample_time)
         except Exception as e:
             print(f"Connection failed: {e}")
@@ -234,7 +238,9 @@ class LVPanel(Panel):
             self.lbl_mon_current.setText("IMON: ---.- A")
             self.lbl_channel.setText("OUTPUT: ---")
             self.btn_disconnect.setEnabled(False)
+            self.btn_disconnect.setVisible(False)
             self.btn_connect.setEnabled(True)
+            self.btn_connect.setVisible(True)
 
 
     def lv_run(self):

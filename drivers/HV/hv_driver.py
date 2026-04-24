@@ -22,6 +22,21 @@ class HVPowerSupply():
                                 timeout=1)
         self.flush_input_buffer()
 
+    def __enter__(self):
+        self.set_voltage(0)
+        self.set_channel_off()
+        self.wait_ramp(.5)
+        return self
+    
+    def __exit__(self, type, value, traceback):
+        print("Exiting, ramping down HV now")
+        self.set_voltage(0)
+        self.set_channel_off()
+        self.wait_ramp(.5)
+        self.close()
+        print("Done ramping down")
+
+
     def close(self):
         if self.ser != None:
             self.ser.close()

@@ -76,11 +76,13 @@ class ArduinoPanel(Panel):
         self.btn_connect.setObjectName("greenButton")
         self.btn_connect.clicked.connect(self.start_recording)
         self.btn_connect.setEnabled(True)
+        self.btn_connect.setVisible(True)
 
         self.btn_disconnect = QPushButton("Disconnect")
         self.btn_disconnect.setObjectName("redButton")
         self.btn_disconnect.clicked.connect(self.stop_recording)
         self.btn_disconnect.setEnabled(False)
+        self.btn_disconnect.setVisible(False)
 
         self.lbl_status = QLabel("Disconnected")
 
@@ -159,7 +161,9 @@ class ArduinoPanel(Panel):
             self.recording_thread.start()
             self.lbl_status.setText("Connected")
             self.btn_disconnect.setEnabled(True)
+            self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
+            self.btn_connect.setVisible(False)
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
 
@@ -219,7 +223,9 @@ class ArduinoPanel(Panel):
         self.TC2_lbl.setText("TC2 Temp: --.-°C")
         self.TC2_fault_lbl.setText("TC2 Faults: --")
         self.btn_disconnect.setEnabled(False)
+        self.btn_disconnect.setVisible(False)
         self.btn_connect.setEnabled(True)
+        self.btn_connect.setVisible(True)
 
     def record(self):
         while not self.recorder_stop_evt.is_set():

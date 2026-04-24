@@ -74,11 +74,13 @@ class HVPanel(Panel):
         self.btn_connect.setObjectName("greenButton")
         self.btn_connect.clicked.connect(self.start_hv)
         self.btn_connect.setEnabled(True)
+        self.btn_connect.setVisible(True)
 
         self.btn_disconnect = QPushButton("Disconnect")
         self.btn_disconnect.setObjectName("redButton")
         self.btn_disconnect.clicked.connect(self.stop_hv)
         self.btn_disconnect.setEnabled(False)
+        self.btn_disconnect.setVisible(False)
 
         self.lbl_status = QLabel("Disconnected")
 
@@ -198,7 +200,9 @@ class HVPanel(Panel):
             self.hv_thread = threading.Thread(target=self.hv_run, daemon=True)
             self.hv_thread.start()
             self.btn_disconnect.setEnabled(True)
+            self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
+            self.btn_connect.setVisible(False)
             time.sleep(self.sample_time)
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
@@ -221,7 +225,9 @@ class HVPanel(Panel):
             self.lbl_mon_current.setText("IMON: ---.- uA")
             self.lbl_channel.setText("OUTPUT: ---")
             self.btn_disconnect.setEnabled(False)
+            self.btn_disconnect.setVisible(False)
             self.btn_connect.setEnabled(True)
+            self.btn_connect.setVisible(True)
 
 
     def hv_run(self):
