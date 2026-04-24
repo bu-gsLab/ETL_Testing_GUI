@@ -168,6 +168,8 @@ class ChillerPanel(Panel):
             self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
             self.btn_connect.setVisible(False)
+            self.btn_logging.setEnabled(True)
+            self.btn_set_temp.setEnabled(True)
 
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
@@ -192,6 +194,8 @@ class ChillerPanel(Panel):
         self.btn_disconnect.setVisible(False)
         self.btn_connect.setEnabled(True)
         self.btn_connect.setVisible(True)
+        self.btn_logging.setEnabled(False)
+        self.btn_set_temp.setEnabled(False)
 
     def power_on(self):
         with self.cmd_lock:

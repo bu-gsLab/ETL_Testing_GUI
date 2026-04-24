@@ -217,6 +217,11 @@ class LVPanel(Panel):
             self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
             self.btn_connect.setVisible(False)
+            self.btn_channel_off.setEnabled(True)
+            self.btn_channel_on.setEnabled(True)
+            self.btn_iset.setEnabled(True)
+            self.btn_vset.setEnabled(True)
+            self.btn_logging.setEnabled(True)
             time.sleep(self.sample_time)
         except Exception as e:
             print(f"Connection failed: {e}")
@@ -241,6 +246,11 @@ class LVPanel(Panel):
             self.btn_disconnect.setVisible(False)
             self.btn_connect.setEnabled(True)
             self.btn_connect.setVisible(True)
+            self.btn_channel_off.setEnabled(False)
+            self.btn_channel_on.setEnabled(False)
+            self.btn_iset.setEnabled(False)
+            self.btn_vset.setEnabled(False)
+            self.btn_logging.setEnabled(False)
 
 
     def lv_run(self):

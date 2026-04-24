@@ -164,6 +164,7 @@ class ArduinoPanel(Panel):
             self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
             self.btn_connect.setVisible(False)
+            self.btn_logging.setEnabled(True)
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
 
@@ -226,6 +227,7 @@ class ArduinoPanel(Panel):
         self.btn_disconnect.setVisible(False)
         self.btn_connect.setEnabled(True)
         self.btn_connect.setVisible(True)
+        self.btn_logging.setEnabled(False)
 
     def record(self):
         while not self.recorder_stop_evt.is_set():
