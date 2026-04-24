@@ -2,6 +2,7 @@ import time
 import os
 from tamalero.utils import get_kcu
 from tamalero.ReadoutBoard import ReadoutBoard
+from datetime import datetime
 
 import numpy as np
 from etlup.tamalero.Baseline import BaselineV0
@@ -23,6 +24,8 @@ def test(session) -> BaselineV0:
     # Assume current_base_data['module'] is formatted like "MP40029"
     MID = int(session.current_base_data["module"][2:])
     timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
+    timezone = "-04:00"
+    timestamp_upload = datetime.strptime(timestamp + timezone, "%Y-%m-%d-%H-%M-%S%z")
     result_dir = f"results/{MID}/{timestamp}/"
 
     if not os.path.isdir(result_dir):
@@ -33,8 +36,8 @@ def test(session) -> BaselineV0:
     print("Connecting modules")
     slot = session.current_slot
 
-    moduleids = [0] * len(session.rb_size)
-    moduleids[slot-1] = MID
+    moduleids = [0] * session.rb_size
+    moduleids[slot] = MID
     rb.connect_modules(
         moduleids=moduleids, 
         hard_reset=True, 
@@ -50,8 +53,8 @@ def test(session) -> BaselineV0:
     print("TRIG LPGBT:")
     rb.TRIG_LPGBT.read_adcs()
     
-    module = rb.modules[slot - 1]
-    rb.select_module(slot - 1)
+    module = rb.modules[slot]
+    rb.select_module(slot)
     
     if not module.connected:
         raise ValueError(f"Selected module slot {slot} is not connected.")
@@ -85,10 +88,9 @@ def test(session) -> BaselineV0:
             etroc_baselines.append(etroc.baseline.tolist())
         # HV already set to ramp down and turn off upon exit
 
-    
     data = session.current_base_data | {
         'ambient_celcius': session.room_temp_celcius,
-        "measurement_date": timestamp,
+        "measurement_date": timestamp_upload,
         "etroc_0_Vtemp": etroc_vtemps[0],
         "etroc_1_Vtemp": etroc_vtemps[1],
         "etroc_2_Vtemp": etroc_vtemps[2],

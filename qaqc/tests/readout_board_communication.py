@@ -13,10 +13,6 @@ def test(session):
     """
     try:
         print("Connecting to KCU...")
-        import time
-        for i in range(10):
-            print(f"step {i}")
-            time.sleep(0.5)
         session.kcu = get_kcu(
             session.kcu_ipaddress,
             control_hub=True,

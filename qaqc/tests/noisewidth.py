@@ -14,7 +14,7 @@ def test(session) -> NoisewidthV0:
     """
     slot = session.current_slot
     rb = session.readout_board
-    module = rb.modules[slot - 1]
+    module = rb.modules[slot]
     etroc_noisewidths = []
 
     for etroc in module.ETROCs:
