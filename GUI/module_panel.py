@@ -109,7 +109,7 @@ class ModulePanel(Panel):
         self.test_select_row.addStretch()
         
         self.bias_input_row = QHBoxLayout()
-        self.bias_input_label = QLabel("Scan Bias: ")
+        self.bias_input_label = QLabel("Bias: ")
         self.bias_input = QLineEdit()
         self.bias_input.setText("0")
         self.bias_input.setEnabled(False)
