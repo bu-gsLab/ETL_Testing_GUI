@@ -21,8 +21,8 @@ def test(session) -> BaselineV0:
     Returns a fully populated BaselineV0 instance.
     """
 
-    # Assume current_base_data['module'] is formatted like "MP40029"
-    MID = int(session.current_base_data["module"][2:])
+    # Assume current_base_data['module'] is formatted like "40029" not "MP40029"
+    MID = int(session.current_base_data["module"])
     timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
     timezone = "-04:00"
     timestamp_upload = datetime.strptime(timestamp + timezone, "%Y-%m-%d-%H-%M-%S%z")
@@ -63,11 +63,15 @@ def test(session) -> BaselineV0:
     etroc_vtemps = []
     etroc_baselines = []
 
-    hv = HVPowerSupply("hv_supply")  
-    
-    with hv:
-        hv.set_voltage(50)
-        hv.set_current_limit(40)
+    bias = session.bias_volts[slot]
+    sensor = session.sensor_types[slot] # "FBK" or "HPK"
+    hybrid_num = session.hybrid_nums[slot]
+    sensor_to_current = {"FBK": 100, "HPK": 10}
+    compliance = sensor_to_current[sensor] * hybrid_num
+
+    with HVPowerSupply("hv_supply") as hv:
+        hv.set_voltage(bias)
+        hv.set_current_limit(compliance)
         hv.set_channel_on()
         hv.wait_ramp(0.5)
 
@@ -95,7 +99,7 @@ def test(session) -> BaselineV0:
         "etroc_1_Vtemp": etroc_vtemps[1],
         "etroc_2_Vtemp": etroc_vtemps[2],
         "etroc_3_Vtemp": etroc_vtemps[3],
-        "bias_volts": 50,
+        "bias_volts": bias,
         "pos_0": etroc_baselines[0],
         "pos_1": etroc_baselines[1],
         "pos_2": etroc_baselines[2],

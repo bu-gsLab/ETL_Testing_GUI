@@ -64,6 +64,7 @@ class ArduinoPanel(Panel):
         }
         QPushButton#blueButton:hover { background-color: #339cff; }
         QPushButton#blueButton:pressed { background-color: #0056b3; }
+        QPushButton#blueButton:disabled { background-color: #2f4f6f; }
         """)
 
         self.recorder_stop_evt = None
@@ -90,6 +91,7 @@ class ArduinoPanel(Panel):
         self.btn_logging.setObjectName("blueButton")
         self.btn_logging.clicked.connect(self.toggle_log)
         self.lbl_logging = QLabel("Not Logging")
+        self.btn_logging.setEnabled(False)
 
         button_row = QHBoxLayout()
         button_row.addWidget(self.btn_connect)

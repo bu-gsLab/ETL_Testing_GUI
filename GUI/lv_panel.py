@@ -63,6 +63,7 @@ class LVPanel(Panel):
         }
         QPushButton#blueButton:hover { background-color: #339cff; }
         QPushButton#blueButton:pressed { background-color: #0056b3; }
+        QPushButton#blueButton:disabled { background-color: #2f4f6f; }
         """)
 
         self.lv_stop_evt = None
@@ -88,6 +89,7 @@ class LVPanel(Panel):
         self.btn_logging.setObjectName("blueButton")
         self.btn_logging.clicked.connect(self.toggle_log)
         self.lbl_logging = QLabel("Not Logging")
+        self.btn_logging.setEnabled(False)
 
         button_row = QHBoxLayout()
         button_row.addWidget(self.btn_connect)
@@ -130,6 +132,8 @@ class LVPanel(Panel):
         self.btn_channel_off.setObjectName("redButton")
         self.btn_channel_on.clicked.connect(self.set_channel)
         self.btn_channel_off.clicked.connect(self.set_channel)
+        self.btn_channel_off.setEnabled(False)
+        self.btn_channel_on.setEnabled(False)
         channel_input_row.addWidget(self.btn_channel_on)
         channel_input_row.addWidget(self.btn_channel_off)
 
@@ -139,6 +143,7 @@ class LVPanel(Panel):
         self.btn_vset = QPushButton("Set")
         self.btn_vset.setObjectName("blueButton")
         self.btn_vset.clicked.connect(self.set_voltage)
+        self.btn_vset.setEnabled(False)
 
         self.lbl_set_current_field = make_label("Set Current Limit (A):" )
         self.set_current_field = QLineEdit(parent=self)
@@ -146,6 +151,10 @@ class LVPanel(Panel):
         self.btn_iset = QPushButton("Set")
         self.btn_iset.setObjectName("blueButton")
         self.btn_iset.clicked.connect(self.set_current)
+        self.btn_iset.setEnabled(False)
+
+        self.set_current_field.setEnabled(False)
+        self.set_voltage_field.setEnabled(False)
 
 
         voltage_input_row.addWidget(self.lbl_set_voltage_field)
@@ -222,6 +231,8 @@ class LVPanel(Panel):
             self.btn_iset.setEnabled(True)
             self.btn_vset.setEnabled(True)
             self.btn_logging.setEnabled(True)
+            self.set_current_field.setEnabled(True)
+            self.set_voltage_field.setEnabled(True)
             time.sleep(self.sample_time)
         except Exception as e:
             print(f"Connection failed: {e}")
@@ -251,6 +262,8 @@ class LVPanel(Panel):
             self.btn_iset.setEnabled(False)
             self.btn_vset.setEnabled(False)
             self.btn_logging.setEnabled(False)
+            self.set_current_field.setEnabled(False)
+            self.set_voltage_field.setEnabled(False)
 
 
     def lv_run(self):

@@ -4,7 +4,7 @@ import serial
 import time
 import os
 
-from PyQt5.QtWidgets import QPushButton, QFrame, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QCheckBox, QScrollArea, QWidget
+from PyQt5.QtWidgets import QPushButton, QFrame, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QCheckBox, QScrollArea, QWidget, QComboBox
 from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -18,8 +18,7 @@ class ModulePanel(Panel):
         super().__init__(f"Slot {slot_no}")
         self.slot_no = slot_no
         self.module_str_to_tests = {
-            "Baseline": Baseline.BaselineV0,
-            "Noise Width": Noisewidth.NoisewidthV0
+            "Threshold Scan": [Baseline.BaselineV0, Noisewidth.NoisewidthV0]
         }
         self.module_tests_to_str = {
             Baseline.BaselineV0: "Baseline",
@@ -108,11 +107,46 @@ class ModulePanel(Panel):
         self.test_select_lbl.hide()
         self.scroll_container.hide()
         self.test_select_row.addStretch()
+        
+        self.bias_input_row = QHBoxLayout()
+        self.bias_input_label = QLabel("Scan Bias: ")
+        self.bias_input = QLineEdit()
+        self.bias_input.setText("0")
+        self.bias_input.setEnabled(False)
+        self.bias_input_label.hide()
+        self.bias_input.hide()
+        self.bias_input.setFixedSize(100,30)
+        self.bias_input_row.addWidget(self.bias_input_label)
+        self.bias_input_row.addWidget(self.bias_input)
+        self.bias_input_row.addStretch()
+
+        self.sensor_row = QHBoxLayout()
+        self.sensor_label = QLabel("Sensor Type: ")
+        self.sensor = QComboBox()
+        self.sensor.addItems(["FBK", "HPK"])
+        self.sensor_label.hide()
+        self.sensor.hide()
+        self.sensor_row.addWidget(self.sensor_label)
+        self.sensor_row.addWidget(self.sensor)
+        self.sensor_row.addStretch()
+
+        self.sensor_num_row = QHBoxLayout()
+        self.sensor_num_label = QLabel("# of Hybrids: ")
+        self.sensor_num = QComboBox()
+        self.sensor_num.addItems(["1","2","3","4"])
+        self.sensor_num_label.hide()
+        self.sensor_num.hide()
+        self.sensor_num_row.addWidget(self.sensor_num_label)
+        self.sensor_num_row.addWidget(self.sensor_num)
+        self.sensor_num_row.addStretch()
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.enable_check)
         main_layout.addLayout(self.module_id_row)
         main_layout.addLayout(self.test_select_row)
+        main_layout.addLayout(self.bias_input_row)
+        main_layout.addLayout(self.sensor_row)
+        main_layout.addLayout(self.sensor_num_row)
         main_layout.addStretch()
 
         self.subgrid.addLayout(main_layout, 1, 0, 5, 5, Qt.AlignTop)
@@ -124,9 +158,23 @@ class ModulePanel(Panel):
             self.module_id_inputbox.show()
             self.test_select_lbl.show()
             self.scroll_container.show()
+            self.bias_input_label.show()
+            self.bias_input.show()
+            self.bias_input.setEnabled(True)
+            self.sensor_label.show()
+            self.sensor.show()
+            self.sensor_num_label.show()
+            self.sensor_num.show()
         else:
             self.module_id_inputbox.setEnabled(False)
             self.module_id_label.hide()
             self.module_id_inputbox.hide()
             self.test_select_lbl.hide()
             self.scroll_container.hide()
+            self.bias_input_label.hide()
+            self.bias_input.hide()
+            self.bias_input.setEnabled(False)
+            self.sensor_label.hide()
+            self.sensor.hide()
+            self.sensor_num_label.hide()
+            self.sensor_num.hide()

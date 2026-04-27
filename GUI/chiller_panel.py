@@ -62,6 +62,7 @@ class ChillerPanel(Panel):
         }
         QPushButton#blueButton:hover { background-color: #339cff; }
         QPushButton#blueButton:pressed { background-color: #0056b3; }
+        QPushButton#blueButton:disabled { background-color: #2f4f6f; }
         """)
 
         self.chiller_stop_evt = None
@@ -87,6 +88,7 @@ class ChillerPanel(Panel):
         self.btn_logging.setObjectName("blueButton")
         self.btn_logging.clicked.connect(self.toggle_log)
         self.lbl_logging = QLabel("Not Logging")
+        self.btn_logging.setEnabled(False)
 
         button_row = QHBoxLayout()
         button_row.addWidget(self.btn_connect)
@@ -125,12 +127,15 @@ class ChillerPanel(Panel):
         self.lbl_set_temp_input = make_label("Set Temp (°C): ")
         self.input_set_temp = QLineEdit()
         self.input_set_temp.setFixedSize(60, 30)
+        self.input_set_temp.setEnabled(False)
         self.btn_set_temp = QPushButton("Set")
         self.btn_set_temp.setObjectName("blueButton")
         self.btn_set_temp.clicked.connect(self.set_temperature)
+        self.btn_set_temp.setEnabled(False)
         input_row.addWidget(self.lbl_power_toggle)
         input_row.addWidget(self.btn_power_on)
         input_row.addWidget(self.btn_power_off)
+        input_row.addStretch(1)
         input_row.addWidget(self.lbl_set_temp_input)
         input_row.addWidget(self.input_set_temp)
         input_row.addWidget(self.btn_set_temp)
@@ -170,6 +175,7 @@ class ChillerPanel(Panel):
             self.btn_connect.setVisible(False)
             self.btn_logging.setEnabled(True)
             self.btn_set_temp.setEnabled(True)
+            self.input_set_temp.setEnabled(True)
 
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
@@ -196,6 +202,7 @@ class ChillerPanel(Panel):
         self.btn_connect.setVisible(True)
         self.btn_logging.setEnabled(False)
         self.btn_set_temp.setEnabled(False)
+        self.input_set_temp.setEnabled(False)
 
     def power_on(self):
         with self.cmd_lock:
