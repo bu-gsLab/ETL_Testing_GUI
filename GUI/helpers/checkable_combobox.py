@@ -8,9 +8,11 @@ class CheckableComboBox(QtWidgets.QComboBox):
             QComboBox {
                 color: #ffffff;
                 border: 1px solid #ffffff;
-                border-radius: 6px;
-                padding: 4px 30px;
+                border-radius: 4px;
+                padding: 4px 4px;
                 background-color: #3b3b3b;
+                min-height: 20px;
+                max-height: 20px;
             }
             QComboBox:disabled {
                 color: #9aa5b1;

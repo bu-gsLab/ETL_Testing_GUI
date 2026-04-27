@@ -17,53 +17,6 @@ class ChillerPanel(Panel):
         super().__init__(title)
 
         self.setObjectName("ChillerPanel")
-        self.setStyleSheet("""
-        #ChillerPanel QWidget { color: #ffffff; }
-        QLabel { color: #ffffff; }
-
-        QLineEdit, QPlainTextEdit {
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            border-radius: 6px;
-            padding: 4px 6px;
-            selection-background-color: #2563eb;
-            selection-color: #ffffff;
-        }
-
-        QPushButton {
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            padding: 8px 14px;
-            font-weight: 600;
-        }
-        QPushButton:disabled { color: #9aa5b1; }
-
-        QPushButton#greenButton {
-            background-color: #16a34a;
-            color: #ffffff;
-        }
-        QPushButton#greenButton:hover { background-color: #22c55e; }
-        QPushButton#greenButton:pressed { background-color: #15803d; }
-        QPushButton#greenButton:disabled { background-color: #14532d; color: #9aa5b1;}
-
-
-        QPushButton#redButton {
-            background-color: #e53935;
-            color: #ffffff;
-        }
-        QPushButton#redButton:hover { background-color: #ef5350; }
-        QPushButton#redButton:pressed { background-color: #c62828; }
-        QPushButton#redButton:disabled { background-color: #7f1d1d; color: #9aa5b1;}
-                           
-        QPushButton#blueButton {
-            background-color: #007bff;
-            color: #ffffff;
-        }
-        QPushButton#blueButton:hover { background-color: #339cff; }
-        QPushButton#blueButton:pressed { background-color: #0056b3; }
-        QPushButton#blueButton:disabled { background-color: #2f4f6f; }
-        """)
 
         self.chiller_stop_evt = None
         self.chiller_thread = None
@@ -100,7 +53,7 @@ class ChillerPanel(Panel):
 
         def make_label(text):
             lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 12))
+            #lbl.setFont(QFont("Calibri", 12))
             return lbl
         
         label_row = QHBoxLayout()
@@ -126,7 +79,7 @@ class ChillerPanel(Panel):
         self.btn_power_off.setEnabled(False)
         self.lbl_set_temp_input = make_label("Set Temp (°C): ")
         self.input_set_temp = QLineEdit()
-        self.input_set_temp.setFixedSize(60, 30)
+        self.input_set_temp.setFixedSize(60, 25)
         self.input_set_temp.setEnabled(False)
         self.btn_set_temp = QPushButton("Set")
         self.btn_set_temp.setObjectName("blueButton")

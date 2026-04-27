@@ -19,54 +19,6 @@ class ArduinoPanel(Panel):
         super().__init__(title)
 
         self.setObjectName("arduinoPanel")
-        self.setStyleSheet("""
-        #arduinoPanel, #arduinoPanel QWidget { color: #ffffff; }
-        QLabel { color: #ffffff; }
-
-        QLineEdit, QPlainTextEdit {
-            color: #ffffff;
-            border: 1px solid #374151;
-            border-radius: 6px;
-            padding: 4px 6px;
-            selection-background-color: #2563eb;
-            selection-color: #ffffff;
-        }
-
-        QPushButton {
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            padding: 8px 14px;
-            font-weight: 600;
-        }
-        QPushButton:disabled { color: #9aa5b1; }
-
-        QPushButton#greenButton {
-            background-color: #16a34a;
-            color: #ffffff;
-        }
-        QPushButton#greenButton:hover { background-color: #22c55e; }
-        QPushButton#greenButton:pressed { background-color: #15803d; }
-        QPushButton#greenButton:disabled { background-color: #14532d; color: #9aa5b1;}
-
-
-        QPushButton#redButton {
-            background-color: #e53935;
-            color: #ffffff;
-        }
-        QPushButton#redButton:hover { background-color: #ef5350; }
-        QPushButton#redButton:pressed { background-color: #c62828; }
-        QPushButton#redButton:disabled { background-color: #7f1d1d; color: #9aa5b1;}
-                           
-        QPushButton#blueButton {
-            background-color: #007bff;
-            color: #ffffff;
-        }
-        QPushButton#blueButton:hover { background-color: #339cff; }
-        QPushButton#blueButton:pressed { background-color: #0056b3; }
-        QPushButton#blueButton:disabled { background-color: #2f4f6f; }
-        """)
-
         self.recorder_stop_evt = None
         self.recording_thread = None
 
@@ -103,7 +55,7 @@ class ArduinoPanel(Panel):
 
         def make_label(text):
             lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 12))
+            #lbl.setFont(QFont("Calibri", 12))
             return lbl
 
         self.ambtemp_lbl = make_label("Ambient Temp: --.-°C")

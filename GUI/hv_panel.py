@@ -18,53 +18,6 @@ class HVPanel(Panel):
         super().__init__(title)
 
         self.setObjectName("HVPanel")
-        self.setStyleSheet("""
-        #HVPanel QWidget { color: #ffffff; }
-        QLabel { color: #ffffff; }
-
-        QLineEdit, QPlainTextEdit {
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            border-radius: 6px;
-            padding: 4px 6px;
-            selection-background-color: #2563eb;
-            selection-color: #ffffff;
-        }
-
-        QPushButton {
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            padding: 8px 14px;
-            font-weight: 600;
-        }
-        QPushButton:disabled { color: #9aa5b1; }
-
-        QPushButton#greenButton {
-            background-color: #16a34a;
-            color: #ffffff;
-        }
-        QPushButton#greenButton:hover { background-color: #22c55e; }
-        QPushButton#greenButton:pressed { background-color: #15803d; }
-        QPushButton#greenButton:disabled { background-color: #14532d; color: #9aa5b1;}
-
-
-        QPushButton#redButton {
-            background-color: #e53935;
-            color: #ffffff;
-        }
-        QPushButton#redButton:hover { background-color: #ef5350; }
-        QPushButton#redButton:pressed { background-color: #c62828; }
-        QPushButton#redButton:disabled { background-color: #7f1d1d; color: #9aa5b1;}
-                           
-        QPushButton#blueButton {
-            background-color: #007bff;
-            color: #ffffff;
-        }
-        QPushButton#blueButton:hover { background-color: #339cff; }
-        QPushButton#blueButton:pressed { background-color: #0056b3; }
-        QPushButton#blueButton:disabled { background-color: #2f4f6f; }
-        """)
 
         self.hv_stop_evt = None
         self.hv_thread = None
@@ -101,7 +54,7 @@ class HVPanel(Panel):
 
         def make_label(text):
             lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 12))
+            #lbl.setFont(QFont("Calibri", 12))
             return lbl
         
         channel_row = QHBoxLayout()
@@ -139,7 +92,7 @@ class HVPanel(Panel):
 
         self.lbl_set_voltage_field = make_label("Set Voltage (V): ")
         self.set_voltage_field = QLineEdit(parent=self)
-        self.set_voltage_field.setFixedSize(60,30)
+        self.set_voltage_field.setFixedSize(60,25)
         self.set_voltage_field.setEnabled(False)
         self.btn_vset = QPushButton("Set")
         self.btn_vset.setObjectName("blueButton")
@@ -148,7 +101,7 @@ class HVPanel(Panel):
 
         self.lbl_set_current_field = make_label("Set Current Limit (uA):" )
         self.set_current_field = QLineEdit(parent=self)
-        self.set_current_field.setFixedSize(60,30)
+        self.set_current_field.setFixedSize(60,25)
         self.set_current_field.setEnabled(False)
         self.btn_iset = QPushButton("Set")
         self.btn_iset.setObjectName("blueButton")
