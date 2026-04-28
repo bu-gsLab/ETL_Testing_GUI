@@ -163,6 +163,8 @@ class ArduinoPanel(Panel):
         self.reset_GUI()
 
     def error_GUI(self):
+        self.lbl_status.setText("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
         self.ambtemp_lbl.setText("Ambient Temp: --.-°C")
         self.rH_lbl.setText("Relative Humidity: --.-%")
         self.dewpoint_lbl.setText("Dew Point: --.-°C")
@@ -192,7 +194,7 @@ class ArduinoPanel(Panel):
 
     def reset_GUI(self):
         self.recording_thread = None
-        self.lbl_status = QLabel("Disconnected")
+        self.lbl_status.setText("Disconnected")
         self.lbl_status.setStyleSheet("color: #e53935;")
         self.ambtemp_lbl.setText("Ambient Temp: --.-°C")
         self.rH_lbl.setText("Relative Humidity: --.-%")
