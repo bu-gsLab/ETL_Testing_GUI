@@ -150,12 +150,13 @@ class ChillerPanel(Panel):
     
     
     def stop_chiller(self):
-        time.sleep(self.sample_time)
         if self.chiller_thread == None:
             print("Chiller thread not running")
             return
         
         self.chiller_stop_evt.set()
+        time.sleep(self.sample_time)
+        
         if self.chiller_thread:
             self.chiller_thread = None
         if self.chiller:
