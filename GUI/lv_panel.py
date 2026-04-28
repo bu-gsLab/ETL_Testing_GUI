@@ -25,21 +25,22 @@ class LVPanel(Panel):
         self.log_timestamp = None
 
         self.btn_connect = QPushButton("Connect")
-        self.btn_connect.setObjectName("greenButton")
+        self.btn_connect.setObjectName("neutralButton")
         self.btn_connect.clicked.connect(self.start_lv)
         self.btn_connect.setEnabled(True)
         self.btn_connect.setVisible(True)
 
         self.btn_disconnect = QPushButton("Disconnect")
-        self.btn_disconnect.setObjectName("redButton")
+        self.btn_disconnect.setObjectName("neutralButton")
         self.btn_disconnect.clicked.connect(self.stop_lv)
         self.btn_disconnect.setEnabled(False)
         self.btn_disconnect.setVisible(False)
 
         self.lbl_status = QLabel("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
 
         self.btn_logging = QPushButton("Toggle Logging")
-        self.btn_logging.setObjectName("blueButton")
+        self.btn_logging.setObjectName("neutralButton")
         self.btn_logging.clicked.connect(self.toggle_log)
         self.lbl_logging = QLabel("Not Logging")
         self.lbl_logging.setEnabled(False)
@@ -101,7 +102,7 @@ class LVPanel(Panel):
         self.set_voltage_field = QLineEdit(parent=self)
         self.set_voltage_field.setFixedSize(60,25)
         self.btn_vset = QPushButton("Set")
-        self.btn_vset.setObjectName("blueButton")
+        self.btn_vset.setObjectName("neutralButton")
         self.btn_vset.clicked.connect(self.set_voltage)
         self.btn_vset.setEnabled(False)
 
@@ -110,7 +111,7 @@ class LVPanel(Panel):
         self.set_current_field = QLineEdit(parent=self)
         self.set_current_field.setFixedSize(60,25)
         self.btn_iset = QPushButton("Set")
-        self.btn_iset.setObjectName("blueButton")
+        self.btn_iset.setObjectName("neutralButton")
         self.btn_iset.clicked.connect(self.set_current)
         self.btn_iset.setEnabled(False)
 
@@ -181,6 +182,7 @@ class LVPanel(Panel):
             # TODO: Add more channels
             self.lv = LVPowerSupply("192.168.0.30", channel=1)
             self.lbl_status.setText("Connected")
+            self.lbl_status.setStyleSheet("color: #16a34a;")
             self.lv_stop_evt.clear()
             self.lv_thread = threading.Thread(target=self.lv_run, daemon=True)
             self.lv_thread.start()
@@ -218,6 +220,7 @@ class LVPanel(Panel):
         if self.lv:
             self.lv.close()
             self.lbl_status.setText("Disconnected")
+            self.lbl_status.setStyleSheet("color: #e53935;")
             self.lbl_set_voltage.setText("VSET: --- V")
             self.lbl_set_current.setText("ISET: ---.- A")
             self.lbl_mon_voltage.setText("VMON: --- V")

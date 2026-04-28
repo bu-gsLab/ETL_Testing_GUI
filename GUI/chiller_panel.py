@@ -24,21 +24,22 @@ class ChillerPanel(Panel):
         self.log_timestamp = None
 
         self.btn_connect = QPushButton("Connect")
-        self.btn_connect.setObjectName("greenButton")
+        self.btn_connect.setObjectName("neutralButton")
         self.btn_connect.clicked.connect(self.start_chiller)
         self.btn_connect.setEnabled(True)
         self.btn_connect.setVisible(True)
 
         self.btn_disconnect = QPushButton("Disconnect")
-        self.btn_disconnect.setObjectName("redButton")
+        self.btn_disconnect.setObjectName("neutralButton")
         self.btn_disconnect.clicked.connect(self.stop_chiller)
         self.btn_disconnect.setEnabled(False)
         self.btn_disconnect.setVisible(False)
 
         self.lbl_status = QLabel("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
 
         self.btn_logging = QPushButton("Toggle Logging")
-        self.btn_logging.setObjectName("blueButton")
+        self.btn_logging.setObjectName("neutralButton")
         self.btn_logging.clicked.connect(self.toggle_log)
         self.lbl_logging = QLabel("Not Logging")
         self.btn_logging.setEnabled(False)
@@ -82,7 +83,7 @@ class ChillerPanel(Panel):
         self.input_set_temp.setFixedSize(60, 25)
         self.input_set_temp.setEnabled(False)
         self.btn_set_temp = QPushButton("Set")
-        self.btn_set_temp.setObjectName("blueButton")
+        self.btn_set_temp.setObjectName("neutralButton")
         self.btn_set_temp.clicked.connect(self.set_temperature)
         self.btn_set_temp.setEnabled(False)
         input_row.addWidget(self.lbl_power_toggle)
@@ -125,6 +126,7 @@ class ChillerPanel(Panel):
         try:
             self.chiller = Chiller("/dev/chiller", baud=4800)
             self.lbl_status.setText("Connected")
+            self.lbl_status.setStyleSheet("color: #16a34a;")
             time.sleep(self.sample_time)
             self.chiller_stop_evt.clear()
             self.chiller_thread = threading.Thread(target=self.chiller_run, daemon=True)
@@ -159,6 +161,7 @@ class ChillerPanel(Panel):
         if self.chiller:
             self.chiller.close()
         self.lbl_status.setText("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
         self.lbl_power.setText("Power: ---")
         self.lbl_set_temp.setText("Set Temp: --- °C")
         self.lbl_curr_temp.setText("Current Temp: --- °C")

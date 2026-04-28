@@ -26,21 +26,22 @@ class ArduinoPanel(Panel):
         self.log_timestamp = None
 
         self.btn_connect = QPushButton("Connect")
-        self.btn_connect.setObjectName("greenButton")
+        self.btn_connect.setObjectName("neutralButton")
         self.btn_connect.clicked.connect(self.start_recording)
         self.btn_connect.setEnabled(True)
         self.btn_connect.setVisible(True)
 
         self.btn_disconnect = QPushButton("Disconnect")
-        self.btn_disconnect.setObjectName("redButton")
+        self.btn_disconnect.setObjectName("neutralButton")
         self.btn_disconnect.clicked.connect(self.stop_recording)
         self.btn_disconnect.setEnabled(False)
         self.btn_disconnect.setVisible(False)
 
         self.lbl_status = QLabel("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
 
         self.btn_logging = QPushButton("Toggle Logging")
-        self.btn_logging.setObjectName("blueButton")
+        self.btn_logging.setObjectName("neutralButton")
         self.btn_logging.clicked.connect(self.toggle_log)
         self.lbl_logging = QLabel("Not Logging")
         self.btn_logging.setEnabled(False)
@@ -49,7 +50,7 @@ class ArduinoPanel(Panel):
         button_row.addWidget(self.btn_connect)
         button_row.addWidget(self.btn_disconnect)
         button_row.addWidget(self.lbl_status, 1, Qt.AlignLeft)
-        button_row.addStretch(2)
+        button_row.addStretch(1)
         button_row.addWidget(self.btn_logging)
         button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
 
@@ -68,6 +69,18 @@ class ArduinoPanel(Panel):
         self.TC1_fault_lbl = make_label("TC1 Faults: --")
         self.TC2_lbl = make_label("TC2 Temp: --.-°C")
         self.TC2_fault_lbl = make_label("TC2 Faults: --")
+
+        self.ambtemp_lbl.setEnabled(False)
+        self.rH_lbl.setEnabled(False)
+        self.dewpoint_lbl.setEnabled(False)
+        self.dhtstatus_lbl.setEnabled(False)
+        self.door_lbl.setEnabled(False)
+        self.leak_lbl.setEnabled(False)
+        self.TC1_fault_lbl.setEnabled(False)
+        self.TC1_lbl.setEnabled(False)
+        self.TC2_fault_lbl.setEnabled(False)
+        self.TC2_lbl.setEnabled(False)
+        self.lbl_logging.setEnabled(False)
 
 
         label_grid = QGridLayout()
@@ -114,11 +127,24 @@ class ArduinoPanel(Panel):
             self.recording_thread = threading.Thread(target=self.record, daemon=True)
             self.recording_thread.start()
             self.lbl_status.setText("Connected")
+            self.lbl_status.setStyleSheet("color: #16a34a;")
             self.btn_disconnect.setEnabled(True)
             self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
             self.btn_connect.setVisible(False)
             self.btn_logging.setEnabled(True)
+            self.ambtemp_lbl.setEnabled(True)
+            self.rH_lbl.setEnabled(True)
+            self.dewpoint_lbl.setEnabled(True)
+            self.dhtstatus_lbl.setEnabled(True)
+            self.door_lbl.setEnabled(True)
+            self.leak_lbl.setEnabled(True)
+            self.TC1_fault_lbl.setEnabled(True)
+            self.TC1_lbl.setEnabled(True)
+            self.TC2_fault_lbl.setEnabled(True)
+            self.TC2_lbl.setEnabled(True)
+            self.lbl_logging.setEnabled(True)
+
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
 
@@ -166,7 +192,8 @@ class ArduinoPanel(Panel):
 
     def reset_GUI(self):
         self.recording_thread = None
-        self.lbl_status.setText("Disconnected")
+        self.lbl_status = QLabel("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
         self.ambtemp_lbl.setText("Ambient Temp: --.-°C")
         self.rH_lbl.setText("Relative Humidity: --.-%")
         self.dewpoint_lbl.setText("Dew Point: --.-°C")
@@ -182,6 +209,17 @@ class ArduinoPanel(Panel):
         self.btn_connect.setEnabled(True)
         self.btn_connect.setVisible(True)
         self.btn_logging.setEnabled(False)
+        self.ambtemp_lbl.setEnabled(False)
+        self.rH_lbl.setEnabled(False)
+        self.dewpoint_lbl.setEnabled(False)
+        self.dhtstatus_lbl.setEnabled(False)
+        self.door_lbl.setEnabled(False)
+        self.leak_lbl.setEnabled(False)
+        self.TC1_fault_lbl.setEnabled(False)
+        self.TC1_lbl.setEnabled(False)
+        self.TC2_fault_lbl.setEnabled(False)
+        self.TC2_lbl.setEnabled(False)
+        self.lbl_logging.setEnabled(False)
 
     def record(self):
         while not self.recorder_stop_evt.is_set():
