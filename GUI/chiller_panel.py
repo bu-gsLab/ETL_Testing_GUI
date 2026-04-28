@@ -171,6 +171,8 @@ class ChillerPanel(Panel):
         self.btn_connect.setVisible(True)
         self.btn_logging.setEnabled(False)
         self.btn_set_temp.setEnabled(False)
+        self.btn_power_on.setEnabled(False)
+        self.btn_power_off.setEnabled(False)
         self.input_set_temp.setEnabled(False)
         self.lbl_logging.setEnabled(False)
         self.lbl_curr_temp.setEnabled(False)
