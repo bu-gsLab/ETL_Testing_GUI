@@ -13,6 +13,7 @@ class Panel(QFrame):
         self.setStyleSheet("""
         QWidget { color: #ffffff; }
         QLabel { color: #ffffff; }
+        QLabel:disabled { color: #9aa5b1; }
         QCheckBox { color: #ffffff; }
 
         QLineEdit, QPlainTextEdit {
@@ -29,8 +30,8 @@ class Panel(QFrame):
         QPushButton {
             color: #ffffff;
             border: none;
-            border-radius: 10px;
-            padding: 4px 4px;
+            border-radius: 8px;
+            padding: 4px 8px;
             font-weight: 400;
         }
         QPushButton:disabled { color: #9aa5b1; }
@@ -58,7 +59,7 @@ class Panel(QFrame):
         }
         QPushButton#blueButton:hover { background-color: #339cff; }
         QPushButton#blueButton:pressed { background-color: #0056b3; }
-        QPushButton#blueButton:disabled { background-color: #2f4f6f; }
+        QPushButton#blueButton:disabled { background-color: #2f4f6f; color: #9aa5b1; }
         """)
 
         subgrid = QGridLayout(self)

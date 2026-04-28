@@ -42,6 +42,7 @@ class LVPanel(Panel):
         self.btn_logging.setObjectName("blueButton")
         self.btn_logging.clicked.connect(self.toggle_log)
         self.lbl_logging = QLabel("Not Logging")
+        self.lbl_logging.setEnabled(False)
         self.btn_logging.setEnabled(False)
 
         button_row = QHBoxLayout()
@@ -59,17 +60,22 @@ class LVPanel(Panel):
         
         channel_row = QHBoxLayout()
         self.lbl_channel = make_label("OUTPUT: ---")
+        self.lbl_channel.setEnabled(False)
         channel_row.addWidget(self.lbl_channel)
 
         set_label_row = QHBoxLayout()
         self.lbl_set_voltage = make_label("VSET: --- V")
         self.lbl_set_current = make_label("ISET: ---.- uA")
+        self.lbl_set_current.setEnabled(False)
+        self.lbl_set_voltage.setEnabled(False)
         set_label_row.addWidget(self.lbl_set_voltage)
         set_label_row.addWidget(self.lbl_set_current)
 
         mon_label_row = QHBoxLayout()
         self.lbl_mon_voltage = make_label("VMON: --- V")
         self.lbl_mon_current = make_label("IMON: ---.- uA")
+        self.lbl_mon_current.setEnabled(False)
+        self.lbl_mon_voltage.setEnabled(False)
         mon_label_row.addWidget(self.lbl_mon_voltage)
         mon_label_row.addWidget(self.lbl_mon_current)
 
@@ -91,6 +97,7 @@ class LVPanel(Panel):
         channel_input_row.addWidget(self.btn_channel_off)
 
         self.lbl_set_voltage_field = make_label("Set Voltage (V): ")
+        self.lbl_set_voltage_field.setEnabled(False)
         self.set_voltage_field = QLineEdit(parent=self)
         self.set_voltage_field.setFixedSize(60,25)
         self.btn_vset = QPushButton("Set")
@@ -99,6 +106,7 @@ class LVPanel(Panel):
         self.btn_vset.setEnabled(False)
 
         self.lbl_set_current_field = make_label("Set Current Limit (A):" )
+        self.lbl_set_current_field.setEnabled(False)
         self.set_current_field = QLineEdit(parent=self)
         self.set_current_field.setFixedSize(60,25)
         self.btn_iset = QPushButton("Set")
@@ -145,6 +153,7 @@ class LVPanel(Panel):
         self.cmd = None
 
 
+
     def update_GUI(self, data):
         if data["output"]:
             self.lbl_channel.setText("OUTPUT: ON")
@@ -186,6 +195,14 @@ class LVPanel(Panel):
             self.btn_logging.setEnabled(True)
             self.set_current_field.setEnabled(True)
             self.set_voltage_field.setEnabled(True)
+            self.lbl_set_current_field.setEnabled(True)
+            self.lbl_set_voltage_field.setEnabled(True)
+            self.lbl_logging.setEnabled(True)
+            self.lbl_set_current.setEnabled(True)
+            self.lbl_set_voltage.setEnabled(True)
+            self.lbl_channel.setEnabled(True)
+            self.lbl_mon_current.setEnabled(True)
+            self.lbl_mon_voltage.setEnabled(True)
             time.sleep(self.sample_time)
         except Exception as e:
             print(f"Connection failed: {e}")
@@ -217,6 +234,14 @@ class LVPanel(Panel):
             self.btn_logging.setEnabled(False)
             self.set_current_field.setEnabled(False)
             self.set_voltage_field.setEnabled(False)
+            self.lbl_set_current_field.setEnabled(False)
+            self.lbl_set_voltage_field.setEnabled(False)
+            self.lbl_logging.setEnabled(False)
+            self.lbl_set_current.setEnabled(False)
+            self.lbl_set_voltage.setEnabled(False)
+            self.lbl_channel.setEnabled(False)
+            self.lbl_mon_current.setEnabled(False)
+            self.lbl_mon_voltage.setEnabled(False)
 
 
     def lv_run(self):

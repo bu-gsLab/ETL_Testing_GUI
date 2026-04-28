@@ -109,6 +109,13 @@ class ChillerPanel(Panel):
         self.cmd_waiting = False
         self.cmd = None
 
+        self.lbl_logging.setEnabled(False)
+        self.lbl_curr_temp.setEnabled(False)
+        self.lbl_power.setEnabled(False)
+        self.lbl_power_toggle.setEnabled(False)
+        self.lbl_set_temp_input.setEnabled(False)
+        self.lbl_set_temp.setEnabled(False)
+
     def start_chiller(self):
         if self.chiller_thread != None:
             print("Chiller thread already running")
@@ -129,6 +136,12 @@ class ChillerPanel(Panel):
             self.btn_logging.setEnabled(True)
             self.btn_set_temp.setEnabled(True)
             self.input_set_temp.setEnabled(True)
+            self.lbl_logging.setEnabled(True)
+            self.lbl_curr_temp.setEnabled(True)
+            self.lbl_power.setEnabled(True)
+            self.lbl_power_toggle.setEnabled(True)
+            self.lbl_set_temp_input.setEnabled(True)
+            self.lbl_set_temp.setEnabled(True)
 
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
@@ -156,6 +169,12 @@ class ChillerPanel(Panel):
         self.btn_logging.setEnabled(False)
         self.btn_set_temp.setEnabled(False)
         self.input_set_temp.setEnabled(False)
+        self.lbl_logging.setEnabled(False)
+        self.lbl_curr_temp.setEnabled(False)
+        self.lbl_power.setEnabled(False)
+        self.lbl_power_toggle.setEnabled(False)
+        self.lbl_set_temp_input.setEnabled(False)
+        self.lbl_set_temp.setEnabled(False)
 
     def power_on(self):
         with self.cmd_lock:

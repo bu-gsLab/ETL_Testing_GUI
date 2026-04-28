@@ -144,6 +144,14 @@ class HVPanel(Panel):
         self.data = {}
 
         self.update_GUI_signal.connect(self.update_GUI)
+        self.lbl_set_current_field.setEnabled(False)
+        self.lbl_set_voltage_field.setEnabled(False)
+        self.lbl_logging.setEnabled(False)
+        self.lbl_set_current.setEnabled(False)
+        self.lbl_set_voltage.setEnabled(False)
+        self.lbl_channel.setEnabled(False)
+        self.lbl_mon_current.setEnabled(False)
+        self.lbl_mon_voltage.setEnabled(False)
 
 
 
@@ -171,6 +179,14 @@ class HVPanel(Panel):
             self.btn_logging.setEnabled(True)
             self.set_current_field.setEnabled(True)
             self.set_voltage_field.setEnabled(True)
+            self.lbl_set_current_field.setEnabled(True)
+            self.lbl_set_voltage_field.setEnabled(True)
+            self.lbl_logging.setEnabled(True)
+            self.lbl_set_current.setEnabled(True)
+            self.lbl_set_voltage.setEnabled(True)
+            self.lbl_channel.setEnabled(True)
+            self.lbl_mon_current.setEnabled(True)
+            self.lbl_mon_voltage.setEnabled(True)
             time.sleep(self.sample_time)
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
@@ -203,6 +219,14 @@ class HVPanel(Panel):
             self.btn_logging.setEnabled(False)
             self.set_current_field.setEnabled(False)
             self.set_voltage_field.setEnabled(False)
+            self.lbl_set_current_field.setEnabled(False)
+            self.lbl_set_voltage_field.setEnabled(False)
+            self.lbl_logging.setEnabled(False)
+            self.lbl_set_current.setEnabled(False)
+            self.lbl_set_voltage.setEnabled(False)
+            self.lbl_channel.setEnabled(False)
+            self.lbl_mon_current.setEnabled(False)
+            self.lbl_mon_voltage.setEnabled(False)
 
 
     def hv_run(self):
@@ -281,7 +305,7 @@ class HVPanel(Panel):
         self.lbl_set_voltage.setText(f"VSET: {data['vset']} V")
         self.lbl_set_current.setText(f"ISET: {data['iset']} uA")
         self.lbl_mon_voltage.setText(f"VMON: {data['vmon']} V")
-        self.lbl_mon_current.setText(f"IMON: {data['imon']} uA")
+        self.lbl_mon_current.setText(f"IMON: {data['imon']:.3f} uA")
 
 
     def set_voltage(self):
