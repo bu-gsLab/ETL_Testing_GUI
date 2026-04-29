@@ -51,34 +51,25 @@ class ChillerPanel(Panel):
         button_row.addStretch(1)
         button_row.addWidget(self.btn_logging)
         button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
-
-        def make_label(text):
-            lbl = QLabel(text)
-            #lbl.setFont(QFont("Calibri", 12))
-            return lbl
         
         label_row = QHBoxLayout()
 
-        self.lbl_power = make_label("Power: ---")
-        self.lbl_set_temp = make_label("Set Temp: --- °C")
-        self.lbl_curr_temp = make_label("Current Temp: --- °C")
+        self.lbl_set_temp = QLabel("Set Temp: --- °C")
+        self.lbl_curr_temp = QLabel("Current Temp: --- °C")
 
-        label_row.addWidget(self.lbl_power)
         label_row.addWidget(self.lbl_set_temp)
         label_row.addWidget(self.lbl_curr_temp)
 
         input_row = QHBoxLayout()
 
-        self.lbl_power_toggle = make_label("Power: ")
-        self.btn_power_on = QPushButton("ON")
-        self.btn_power_on.setObjectName("greenButton")
-        self.btn_power_on.clicked.connect(self.power_on)
-        self.btn_power_off = QPushButton("OFF")
-        self.btn_power_off.setObjectName("redButton")
-        self.btn_power_off.clicked.connect(self.power_off)
-        self.btn_power_on.setEnabled(False)
-        self.btn_power_off.setEnabled(False)
-        self.lbl_set_temp_input = make_label("Set Temp (°C): ")
+        self.btn_power = QPushButton("Power")
+        self.btn_power.setObjectName("neutralButton")
+        self.btn_power.clicked.connect(self.toggle_power)
+        self.btn_power.setEnabled(False)
+        self.lbl_power = QLabel("---")
+        self.lbl_power.setEnabled(False)
+
+        self.lbl_set_temp_input = QLabel("Set Temp (°C): ")
         self.input_set_temp = QLineEdit()
         self.input_set_temp.setFixedSize(60, 25)
         self.input_set_temp.setEnabled(False)
@@ -86,9 +77,10 @@ class ChillerPanel(Panel):
         self.btn_set_temp.setObjectName("neutralButton")
         self.btn_set_temp.clicked.connect(self.set_temperature)
         self.btn_set_temp.setEnabled(False)
-        input_row.addWidget(self.lbl_power_toggle)
-        input_row.addWidget(self.btn_power_on)
-        input_row.addWidget(self.btn_power_off)
+
+        input_row.addWidget(self.btn_power)
+        input_row.addWidget(self.lbl_power)
+
         input_row.addStretch(1)
         input_row.addWidget(self.lbl_set_temp_input)
         input_row.addWidget(self.input_set_temp)
@@ -112,10 +104,10 @@ class ChillerPanel(Panel):
 
         self.lbl_logging.setEnabled(False)
         self.lbl_curr_temp.setEnabled(False)
-        self.lbl_power.setEnabled(False)
-        self.lbl_power_toggle.setEnabled(False)
         self.lbl_set_temp_input.setEnabled(False)
         self.lbl_set_temp.setEnabled(False)
+
+        self.is_on = False
 
     def start_chiller(self):
         if self.chiller_thread != None:
@@ -137,11 +129,11 @@ class ChillerPanel(Panel):
             self.btn_connect.setVisible(False)
             self.btn_logging.setEnabled(True)
             self.btn_set_temp.setEnabled(True)
+            self.btn_power.setEnabled(True)
             self.input_set_temp.setEnabled(True)
             self.lbl_logging.setEnabled(True)
             self.lbl_curr_temp.setEnabled(True)
             self.lbl_power.setEnabled(True)
-            self.lbl_power_toggle.setEnabled(True)
             self.lbl_set_temp_input.setEnabled(True)
             self.lbl_set_temp.setEnabled(True)
 
@@ -155,15 +147,16 @@ class ChillerPanel(Panel):
             return
         
         self.chiller_stop_evt.set()
-        time.sleep(self.sample_time)
+        self.chiller_thread.join(timeout=self.sample_time*2)
+        self.chiller_stop_evt.clear()
+        self.chiller_thread = None
         
-        if self.chiller_thread:
-            self.chiller_thread = None
         if self.chiller:
             self.chiller.close()
+
         self.lbl_status.setText("Disconnected")
         self.lbl_status.setStyleSheet("color: #e53935;")
-        self.lbl_power.setText("Power: ---")
+        self.lbl_power.setText("---")
         self.lbl_set_temp.setText("Set Temp: --- °C")
         self.lbl_curr_temp.setText("Current Temp: --- °C")
         self.btn_disconnect.setEnabled(False)
@@ -172,24 +165,17 @@ class ChillerPanel(Panel):
         self.btn_connect.setVisible(True)
         self.btn_logging.setEnabled(False)
         self.btn_set_temp.setEnabled(False)
-        self.btn_power_on.setEnabled(False)
-        self.btn_power_off.setEnabled(False)
+        self.btn_power.setEnabled(False)
         self.input_set_temp.setEnabled(False)
         self.lbl_logging.setEnabled(False)
         self.lbl_curr_temp.setEnabled(False)
         self.lbl_power.setEnabled(False)
-        self.lbl_power_toggle.setEnabled(False)
         self.lbl_set_temp_input.setEnabled(False)
         self.lbl_set_temp.setEnabled(False)
 
-    def power_on(self):
+    def toggle_power(self):
         with self.cmd_lock:
-            self.cmd = ["power_on"]
-            self.cmd_waiting = True
-
-    def power_off(self):
-        with self.cmd_lock:
-            self.cmd = ["power_off"]
+            self.cmd = ["power"]
             self.cmd_waiting = True
         
     def set_temperature(self):
@@ -208,13 +194,13 @@ class ChillerPanel(Panel):
         self.lbl_curr_temp.setText(f"Current Temp: {data['curr_temp']:.2f} °C")
         self.lbl_set_temp.setText(f"Set Temp: {data['set_temp']:.2f} °C")
         if data["power"] == '1':
-            self.lbl_power.setText("Power: ON")
-            self.btn_power_on.setEnabled(False)
-            self.btn_power_off.setEnabled(True)
+            self.lbl_power.setText("ON")
+            self.lbl_power.setStyleSheet("color: #16a34a;")
+            self.is_on = True
         else:
-            self.lbl_power.setText("Power: OFF")
-            self.btn_power_on.setEnabled(True)
-            self.btn_power_off.setEnabled(False)
+            self.lbl_power.setText("OFF")
+            self.lbl_power.setStyleSheet("color: #e53935;")
+            self.is_on = False
 
 
     def chiller_run(self):
@@ -233,17 +219,17 @@ class ChillerPanel(Panel):
                         self.chiller.set_work_temperature(value)
                     except Exception as e:
                         print(f"Error: {e}")
-                elif cmd[0] == "power_on":
-                    try:
-                        self.chiller.set_power_on()
-                    except Exception as e:
-                        print(f"Error: {e}")
-                elif cmd[0] == "power_off":
-                    try:
-                        self.chiller.set_power_off()
-                    except Exception as e:
-                        print(f"Error: {e}")
-    
+                elif cmd[0] == "power":
+                    if self.is_on:
+                        try:
+                            self.chiller.set_power_off()
+                        except Exception as e:
+                            print(f"Error: {e}")
+                    else:
+                        try:
+                            self.chiller.set_power_on()
+                        except Exception as e:
+                            print(f"Error: {e}")
             try:
                 self.curr_temp = self.chiller.get_temperature()
                 self.set_temp = self.chiller.get_work_temperature()

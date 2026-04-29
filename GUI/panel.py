@@ -8,6 +8,7 @@ class Panel(QFrame):
 
         fm = QFontMetrics(QApplication.font())
         em = fm.height()
+        self.em = em
 
         self.setFrameShape(QFrame.Panel)
         self.setFrameShadow(QFrame.Raised)
@@ -32,7 +33,7 @@ class Panel(QFrame):
             color: #ffffff;
             border: none;
             border-radius: {round(em * 0.6)}px;
-            padding: {round(em * 0.25)}px {round(em * 0.25)}px;
+            padding: {round(em * 0.25)}px {round(em * 0.5)}px;
             font-weight: 400;
         }}
         QPushButton:disabled {{ color: #9aa5b1; }}

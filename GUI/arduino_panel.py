@@ -156,6 +156,8 @@ class ArduinoPanel(Panel):
             return
 
         self.recorder_stop_evt.set()
+        self.recording_thread.join(timeout=self.sample_time*2)
+        self.recorder_stop_evt.clear()
 
         if self.arduino:
             self.arduino.close()
