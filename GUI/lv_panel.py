@@ -18,52 +18,6 @@ class LVPanel(Panel):
         super().__init__(title)
         
         self.setObjectName("LVPanel")
-        self.setStyleSheet("""
-        #LVPanel QWidget { color: #ffffff; }
-        QLabel { color: #ffffff; }
-
-        QLineEdit, QPlainTextEdit {
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            border-radius: 6px;
-            padding: 4px 6px;
-            selection-background-color: #2563eb;
-            selection-color: #ffffff;
-        }
-
-        QPushButton {
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            padding: 8px 14px;
-            font-weight: 600;
-        }
-        QPushButton:disabled { color: #9aa5b1; }
-
-        QPushButton#greenButton {
-            background-color: #16a34a;
-            color: #ffffff;
-        }
-        QPushButton#greenButton:hover { background-color: #22c55e; }
-        QPushButton#greenButton:pressed { background-color: #15803d; }
-        QPushButton#greenButton:disabled { background-color: #14532d; color: #9aa5b1;}
-
-
-        QPushButton#redButton {
-            background-color: #e53935;
-            color: #ffffff;
-        }
-        QPushButton#redButton:hover { background-color: #ef5350; }
-        QPushButton#redButton:pressed { background-color: #c62828; }
-        QPushButton#redButton:disabled { background-color: #7f1d1d; color: #9aa5b1;}
-                           
-        QPushButton#blueButton {
-            background-color: #007bff;
-            color: #ffffff;
-        }
-        QPushButton#blueButton:hover { background-color: #339cff; }
-        QPushButton#blueButton:pressed { background-color: #0056b3; }
-        """)
 
         self.lv_stop_evt = None
         self.lv_thread = None
@@ -71,21 +25,26 @@ class LVPanel(Panel):
         self.log_timestamp = None
 
         self.btn_connect = QPushButton("Connect")
-        self.btn_connect.setObjectName("greenButton")
+        self.btn_connect.setObjectName("neutralButton")
         self.btn_connect.clicked.connect(self.start_lv)
         self.btn_connect.setEnabled(True)
+        self.btn_connect.setVisible(True)
 
         self.btn_disconnect = QPushButton("Disconnect")
-        self.btn_disconnect.setObjectName("redButton")
+        self.btn_disconnect.setObjectName("neutralButton")
         self.btn_disconnect.clicked.connect(self.stop_lv)
         self.btn_disconnect.setEnabled(False)
+        self.btn_disconnect.setVisible(False)
 
         self.lbl_status = QLabel("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
 
         self.btn_logging = QPushButton("Toggle Logging")
-        self.btn_logging.setObjectName("blueButton")
+        self.btn_logging.setObjectName("neutralButton")
         self.btn_logging.clicked.connect(self.toggle_log)
         self.lbl_logging = QLabel("Not Logging")
+        self.lbl_logging.setEnabled(False)
+        self.btn_logging.setEnabled(False)
 
         button_row = QHBoxLayout()
         button_row.addWidget(self.btn_connect)
@@ -95,24 +54,20 @@ class LVPanel(Panel):
         button_row.addWidget(self.btn_logging)
         button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
 
-        def make_label(text):
-            lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 12))
-            return lbl
-        
-        channel_row = QHBoxLayout()
-        self.lbl_channel = make_label("OUTPUT: ---")
-        channel_row.addWidget(self.lbl_channel)
-
+    
         set_label_row = QHBoxLayout()
-        self.lbl_set_voltage = make_label("VSET: --- V")
-        self.lbl_set_current = make_label("ISET: ---.- uA")
+        self.lbl_set_voltage = QLabel("VSET: --- V")
+        self.lbl_set_current = QLabel("ISET: ---.- uA")
+        self.lbl_set_current.setEnabled(False)
+        self.lbl_set_voltage.setEnabled(False)
         set_label_row.addWidget(self.lbl_set_voltage)
         set_label_row.addWidget(self.lbl_set_current)
 
         mon_label_row = QHBoxLayout()
-        self.lbl_mon_voltage = make_label("VMON: --- V")
-        self.lbl_mon_current = make_label("IMON: ---.- uA")
+        self.lbl_mon_voltage = QLabel("VMON: --- V")
+        self.lbl_mon_current = QLabel("IMON: ---.- uA")
+        self.lbl_mon_current.setEnabled(False)
+        self.lbl_mon_voltage.setEnabled(False)
         mon_label_row.addWidget(self.lbl_mon_voltage)
         mon_label_row.addWidget(self.lbl_mon_current)
 
@@ -122,28 +77,35 @@ class LVPanel(Panel):
         voltage_input_row = QHBoxLayout()
         current_input_row = QHBoxLayout()
 
-        self.btn_channel_on = QPushButton("OUTPUT ON")
-        self.btn_channel_off = QPushButton("OUTPUT OFF")
-        self.btn_channel_on.setObjectName("greenButton")
-        self.btn_channel_off.setObjectName("redButton")
-        self.btn_channel_on.clicked.connect(self.set_channel)
-        self.btn_channel_off.clicked.connect(self.set_channel)
-        channel_input_row.addWidget(self.btn_channel_on)
-        channel_input_row.addWidget(self.btn_channel_off)
+        self.btn_power = QPushButton("Power")
+        self.btn_power.setObjectName("neutralButton")
+        self.btn_power.clicked.connect(self.set_channel)
+        self.btn_power.setEnabled(False)
+        self.lbl_power = QLabel("---")
+        self.lbl_power.setEnabled(False)
+        channel_input_row.addWidget(self.btn_power)
+        channel_input_row.addWidget(self.lbl_power)
 
-        self.lbl_set_voltage_field = make_label("Set Voltage (V): ")
+        self.lbl_set_voltage_field = QLabel("Set Voltage (V): ")
+        self.lbl_set_voltage_field.setEnabled(False)
         self.set_voltage_field = QLineEdit(parent=self)
-        self.set_voltage_field.setFixedSize(60,30)
+        self.set_voltage_field.setFixedSize(60,25)
         self.btn_vset = QPushButton("Set")
-        self.btn_vset.setObjectName("blueButton")
+        self.btn_vset.setObjectName("neutralButton")
         self.btn_vset.clicked.connect(self.set_voltage)
+        self.btn_vset.setEnabled(False)
 
-        self.lbl_set_current_field = make_label("Set Current Limit (A):" )
+        self.lbl_set_current_field = QLabel("Set Current Limit (A):" )
+        self.lbl_set_current_field.setEnabled(False)
         self.set_current_field = QLineEdit(parent=self)
-        self.set_current_field.setFixedSize(60,30)
+        self.set_current_field.setFixedSize(60,25)
         self.btn_iset = QPushButton("Set")
-        self.btn_iset.setObjectName("blueButton")
+        self.btn_iset.setObjectName("neutralButton")
         self.btn_iset.clicked.connect(self.set_current)
+        self.btn_iset.setEnabled(False)
+
+        self.set_current_field.setEnabled(False)
+        self.set_voltage_field.setEnabled(False)
 
 
         voltage_input_row.addWidget(self.lbl_set_voltage_field)
@@ -155,8 +117,10 @@ class LVPanel(Panel):
 
         
         input_row.addLayout(channel_input_row)
+        input_row.addSpacing(self.em*2)
         input_row.addStretch(1)
         input_row.addLayout(voltage_input_row)
+        input_row.addSpacing(self.em*2)
         input_row.addStretch(1)
         input_row.addLayout(current_input_row)
         input_row.addStretch(1)
@@ -164,7 +128,6 @@ class LVPanel(Panel):
 
         main_layout = QVBoxLayout()
         main_layout.addLayout(button_row)
-        main_layout.addLayout(channel_row)
         main_layout.addLayout(set_label_row)
         main_layout.addLayout(mon_label_row)
         main_layout.addLayout(input_row)
@@ -181,15 +144,16 @@ class LVPanel(Panel):
         self.cmd = None
 
 
+
     def update_GUI(self, data):
+        if self.lv_thread is None:
+            return
         if data["output"]:
-            self.lbl_channel.setText("OUTPUT: ON")
-            self.btn_channel_off.setEnabled(True)
-            self.btn_channel_on.setEnabled(False)
+            self.lbl_power.setText("ON")
+            self.lbl_power.setStyleSheet("color: #16a34a;")
         else:
-            self.lbl_channel.setText("OUTPUT: OFF")
-            self.btn_channel_off.setEnabled(False)
-            self.btn_channel_on.setEnabled(True)
+            self.lbl_power.setText("OFF")
+            self.lbl_power.setStyleSheet("color: #e53935;")
 
         self.lbl_set_voltage.setText(f"VSET: {data['vset']} V")
         self.lbl_set_current.setText(f"ISET: {data['iset']} A")
@@ -208,11 +172,28 @@ class LVPanel(Panel):
             # TODO: Add more channels
             self.lv = LVPowerSupply("192.168.0.30", channel=1)
             self.lbl_status.setText("Connected")
+            self.lbl_status.setStyleSheet("color: #16a34a;")
             self.lv_stop_evt.clear()
             self.lv_thread = threading.Thread(target=self.lv_run, daemon=True)
             self.lv_thread.start()
             self.btn_disconnect.setEnabled(True)
+            self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
+            self.btn_connect.setVisible(False)
+            self.btn_power.setEnabled(True)
+            self.btn_iset.setEnabled(True)
+            self.btn_vset.setEnabled(True)
+            self.btn_logging.setEnabled(True)
+            self.set_current_field.setEnabled(True)
+            self.set_voltage_field.setEnabled(True)
+            self.lbl_set_current_field.setEnabled(True)
+            self.lbl_set_voltage_field.setEnabled(True)
+            self.lbl_logging.setEnabled(True)
+            self.lbl_set_current.setEnabled(True)
+            self.lbl_set_voltage.setEnabled(True)
+            self.lbl_power.setEnabled(True)
+            self.lbl_mon_current.setEnabled(True)
+            self.lbl_mon_voltage.setEnabled(True)
             time.sleep(self.sample_time)
         except Exception as e:
             print(f"Connection failed: {e}")
@@ -223,18 +204,38 @@ class LVPanel(Panel):
             return
         
         self.lv_stop_evt.set()
-        if self.lv_thread:
-            self.lv_thread = None
+        self.lv_thread.join()
+        self.lv_stop_evt.clear()
+
+        self.lv_thread = None
         if self.lv:
             self.lv.close()
             self.lbl_status.setText("Disconnected")
+            self.lbl_status.setStyleSheet("color: #e53935;")
             self.lbl_set_voltage.setText("VSET: --- V")
             self.lbl_set_current.setText("ISET: ---.- A")
             self.lbl_mon_voltage.setText("VMON: --- V")
             self.lbl_mon_current.setText("IMON: ---.- A")
-            self.lbl_channel.setText("OUTPUT: ---")
+            self.lbl_power.setText("---")
+            self.lbl_power.setStyleSheet("")
             self.btn_disconnect.setEnabled(False)
+            self.btn_disconnect.setVisible(False)
             self.btn_connect.setEnabled(True)
+            self.btn_connect.setVisible(True)
+            self.btn_power.setEnabled(False)
+            self.btn_iset.setEnabled(False)
+            self.btn_vset.setEnabled(False)
+            self.btn_logging.setEnabled(False)
+            self.set_current_field.setEnabled(False)
+            self.set_voltage_field.setEnabled(False)
+            self.lbl_set_current_field.setEnabled(False)
+            self.lbl_set_voltage_field.setEnabled(False)
+            self.lbl_logging.setEnabled(False)
+            self.lbl_set_current.setEnabled(False)
+            self.lbl_set_voltage.setEnabled(False)
+            self.lbl_power.setEnabled(False)
+            self.lbl_mon_current.setEnabled(False)
+            self.lbl_mon_voltage.setEnabled(False)
 
 
     def lv_run(self):

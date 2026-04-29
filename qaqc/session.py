@@ -29,9 +29,12 @@ class Session:
         rb_size: Literal[3,6,7],
         rb_serial_number: str,
         modules: List[str],
-        location: str = "Fermilab",
+        location: str = "BU",
         user_created: str = "unknown",
-        room_temp_celcius: Optional[int] = None
+        room_temp_celcius: Optional[int] = None,
+        bias_volts: Optional[list[int]] = None,
+        sensor_types: Optional[list[str]] = None,
+        hybrid_nums: Optional[list[int]] = None
     ):
         # Config variables
         self.kcu_ipaddress: str = kcu_ipaddress
@@ -42,6 +45,10 @@ class Session:
         self.location = location
         self.user_created = user_created
         self.room_temp_celcius: float = room_temp_celcius
+        self.current_slot = None
+        self.bias_volts = bias_volts
+        self.sensor_types = sensor_types
+        self.hybrid_nums = hybrid_nums
 
         # Session state
         self.kcu: Optional[KCU] = None
@@ -110,6 +117,7 @@ class Session:
         """
         A dictionary of all the information in SetupConfig for the upload of a test of a module
         """
+        self.current_slot = slot
         res = {}
         for field in ConstructionBase.model_fields:
             if field == "measurement_date":

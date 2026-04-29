@@ -16,6 +16,7 @@ from etlup.tamalero import *
 
 class RBPanel(Panel):
     run_tests_signal = pyqtSignal(object)
+    kill_tests_signal = pyqtSignal(object)
     def __init__(self, rb_pos):
         self.rb_pos = rb_pos
         self.rb_size = 3
@@ -32,58 +33,12 @@ class RBPanel(Panel):
         }
 
         self.setObjectName("RBPanel")
-        self.setStyleSheet("""
-        #HVPanel QWidget { color: #ffffff; }
-        QLabel { color: #ffffff; }
-
-        QLineEdit, QPlainTextEdit {
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            border-radius: 6px;
-            padding: 4px 6px;
-            selection-background-color: #2563eb;
-            selection-color: #ffffff;
-        }
-
-        QPushButton {
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            padding: 8px 14px;
-            font-weight: 600;
-        }
-        QPushButton:disabled { color: #9aa5b1; }
-
-        QPushButton#greenButton {
-            background-color: #16a34a;
-            color: #ffffff;
-        }
-        QPushButton#greenButton:hover { background-color: #22c55e; }
-        QPushButton#greenButton:pressed { background-color: #15803d; }
-        QPushButton#greenButton:disabled { background-color: #14532d; color: #9aa5b1;}
-
-
-        QPushButton#redButton {
-            background-color: #e53935;
-            color: #ffffff;
-        }
-        QPushButton#redButton:hover { background-color: #ef5350; }
-        QPushButton#redButton:pressed { background-color: #c62828; }
-        QPushButton#redButton:disabled { background-color: #7f1d1d; color: #9aa5b1;}
-                           
-        QPushButton#blueButton {
-            background-color: #007bff;
-            color: #ffffff;
-        }
-        QPushButton#blueButton:hover { background-color: #339cff; }
-        QPushButton#blueButton:pressed { background-color: #0056b3; }
-        """)
-
+    
         main_layout = QVBoxLayout()
 
         self.rb_id_lbl = QLabel("RB Serial #: ")
         self.rb_id_field = QLineEdit()
-        self.rb_id_field.setFixedSize(130,30)
+        self.rb_id_field.setFixedSize(130,25)
         self.rb_id_row = QHBoxLayout()
         self.rb_id_row.addWidget(self.rb_id_lbl)
         self.rb_id_row.addWidget(self.rb_id_field)
@@ -92,6 +47,7 @@ class RBPanel(Panel):
         self.test_select_row = QHBoxLayout()
         container = QWidget()
         self.scroll_container = CheckableComboBox(container)
+        self.scroll_container.setFixedSize(175,20)
 
         self.scroll_container.addItem("Select tests...")
         self.scroll_container.model().item(0, 0).setFlags(Qt.NoItemFlags)
@@ -116,10 +72,17 @@ class RBPanel(Panel):
 
         self.test_btn = QPushButton("Run Tests")
         self.test_btn.clicked.connect(self.run_tests)
-        self.test_btn.setObjectName("redButton")
+        self.test_btn.setObjectName("greenButton")
+
+        self.kill_test_btn = QPushButton("E-Stop")
+        self.kill_test_btn.clicked.connect(self.kill_tests)
+        self.kill_test_btn.setObjectName("redButton")
+        self.kill_test_btn.setEnabled(False)
+
         self.test_btn_row = QHBoxLayout()
         self.test_btn_row.addStretch()
         self.test_btn_row.addWidget(self.test_btn)
+        self.test_btn_row.addWidget(self.kill_test_btn)
         self.test_btn_row.addStretch()
 
         main_layout.addLayout(self.rb_id_row)
@@ -133,5 +96,5 @@ class RBPanel(Panel):
     def run_tests(self):
         self.run_tests_signal.emit(self)
 
-
-    
+    def kill_tests(self):
+        self.kill_tests_signal.emit(self)

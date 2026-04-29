@@ -13,57 +13,12 @@ from drivers.Arduino.arduino_driver import Arduino
 
 class ArduinoPanel(Panel):
     update_GUI_signal = pyqtSignal(dict)
+    disconnect_signal = pyqtSignal()
+    error_signal = pyqtSignal()
     def __init__(self, title="Arduino"):
         super().__init__(title)
 
         self.setObjectName("arduinoPanel")
-        self.setStyleSheet("""
-        #arduinoPanel, #arduinoPanel QWidget { color: #ffffff; }
-        QLabel { color: #ffffff; }
-
-        QLineEdit, QPlainTextEdit {
-            color: #ffffff;
-            border: 1px solid #374151;
-            border-radius: 6px;
-            padding: 4px 6px;
-            selection-background-color: #2563eb;
-            selection-color: #ffffff;
-        }
-
-        QPushButton {
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            padding: 8px 14px;
-            font-weight: 600;
-        }
-        QPushButton:disabled { color: #9aa5b1; }
-
-        QPushButton#greenButton {
-            background-color: #16a34a;
-            color: #ffffff;
-        }
-        QPushButton#greenButton:hover { background-color: #22c55e; }
-        QPushButton#greenButton:pressed { background-color: #15803d; }
-        QPushButton#greenButton:disabled { background-color: #14532d; color: #9aa5b1;}
-
-
-        QPushButton#redButton {
-            background-color: #e53935;
-            color: #ffffff;
-        }
-        QPushButton#redButton:hover { background-color: #ef5350; }
-        QPushButton#redButton:pressed { background-color: #c62828; }
-        QPushButton#redButton:disabled { background-color: #7f1d1d; color: #9aa5b1;}
-                           
-        QPushButton#blueButton {
-            background-color: #007bff;
-            color: #ffffff;
-        }
-        QPushButton#blueButton:hover { background-color: #339cff; }
-        QPushButton#blueButton:pressed { background-color: #0056b3; }
-        """)
-
         self.recorder_stop_evt = None
         self.recording_thread = None
 
@@ -71,45 +26,56 @@ class ArduinoPanel(Panel):
         self.log_timestamp = None
 
         self.btn_connect = QPushButton("Connect")
-        self.btn_connect.setObjectName("greenButton")
+        self.btn_connect.setObjectName("neutralButton")
         self.btn_connect.clicked.connect(self.start_recording)
         self.btn_connect.setEnabled(True)
+        self.btn_connect.setVisible(True)
 
         self.btn_disconnect = QPushButton("Disconnect")
-        self.btn_disconnect.setObjectName("redButton")
+        self.btn_disconnect.setObjectName("neutralButton")
         self.btn_disconnect.clicked.connect(self.stop_recording)
         self.btn_disconnect.setEnabled(False)
+        self.btn_disconnect.setVisible(False)
 
         self.lbl_status = QLabel("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
 
         self.btn_logging = QPushButton("Toggle Logging")
-        self.btn_logging.setObjectName("blueButton")
+        self.btn_logging.setObjectName("neutralButton")
         self.btn_logging.clicked.connect(self.toggle_log)
         self.lbl_logging = QLabel("Not Logging")
+        self.btn_logging.setEnabled(False)
 
         button_row = QHBoxLayout()
         button_row.addWidget(self.btn_connect)
         button_row.addWidget(self.btn_disconnect)
         button_row.addWidget(self.lbl_status, 1, Qt.AlignLeft)
-        button_row.addStretch(2)
+        button_row.addStretch(1)
         button_row.addWidget(self.btn_logging)
         button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
 
-        def make_label(text):
-            lbl = QLabel(text)
-            lbl.setFont(QFont("Calibri", 12))
-            return lbl
+        self.ambtemp_lbl = QLabel("Ambient Temp: --.-°C")
+        self.rH_lbl = QLabel("Relative Humidity: --.-%")
+        self.dewpoint_lbl = QLabel("Dew Point: --.-°C")
+        self.dhtstatus_lbl = QLabel("DHT Status: --")
+        self.door_lbl = QLabel("Door: --")
+        self.leak_lbl = QLabel("Leak: --")
+        self.TC1_lbl = QLabel("TC1 Temp: --.-°C")
+        self.TC1_fault_lbl = QLabel("TC1 Faults: --")
+        self.TC2_lbl = QLabel("TC2 Temp: --.-°C")
+        self.TC2_fault_lbl = QLabel("TC2 Faults: --")
 
-        self.ambtemp_lbl = make_label("Ambient Temp: --.-°C")
-        self.rH_lbl = make_label("Relative Humidity: --.-%")
-        self.dewpoint_lbl = make_label("Dew Point: --.-°C")
-        self.dhtstatus_lbl = make_label("DHT Status: --")
-        self.door_lbl = make_label("Door: --")
-        self.leak_lbl = make_label("Leak: --")
-        self.TC1_lbl = make_label("TC1 Temp: --.-°C")
-        self.TC1_fault_lbl = make_label("TC1 Faults: --")
-        self.TC2_lbl = make_label("TC2 Temp: --.-°C")
-        self.TC2_fault_lbl = make_label("TC2 Faults: --")
+        self.ambtemp_lbl.setEnabled(False)
+        self.rH_lbl.setEnabled(False)
+        self.dewpoint_lbl.setEnabled(False)
+        self.dhtstatus_lbl.setEnabled(False)
+        self.door_lbl.setEnabled(False)
+        self.leak_lbl.setEnabled(False)
+        self.TC1_fault_lbl.setEnabled(False)
+        self.TC1_lbl.setEnabled(False)
+        self.TC2_fault_lbl.setEnabled(False)
+        self.TC2_lbl.setEnabled(False)
+        self.lbl_logging.setEnabled(False)
 
 
         label_grid = QGridLayout()
@@ -137,8 +103,11 @@ class ArduinoPanel(Panel):
         self.arduino = Arduino("/dev/arduino", baudrate=115200, timeout=1.0)
         self.sample_time = 2.5
 
-        # Create PyQt5 signal for updating GUI elements
+        # Create PyQt5 signal for updating GUI elements and stopping thread
         self.update_GUI_signal.connect(self.update_GUI)
+        self.disconnect_signal.connect(self.stop_recording)
+        self.error_signal.connect(self.error_GUI)
+
 
     def start_recording(self):
         if self.recording_thread != None:
@@ -147,44 +116,69 @@ class ArduinoPanel(Panel):
         
         self.recorder_stop_evt = threading.Event()
         try:
-            self.arduino.connect()
-            self.lbl_status.setText("Connected")
+            print(f"Arduino connected: {self.arduino.connect()}")
             time.sleep(self.sample_time)
             self.recorder_stop_evt.clear()
             self.recording_thread = threading.Thread(target=self.record, daemon=True)
             self.recording_thread.start()
+            self.lbl_status.setText("Connected")
+            self.lbl_status.setStyleSheet("color: #16a34a;")
             self.btn_disconnect.setEnabled(True)
+            self.btn_disconnect.setVisible(True)
             self.btn_connect.setEnabled(False)
+            self.btn_connect.setVisible(False)
+            self.btn_logging.setEnabled(True)
+            self.ambtemp_lbl.setEnabled(True)
+            self.rH_lbl.setEnabled(True)
+            self.dewpoint_lbl.setEnabled(True)
+            self.dhtstatus_lbl.setEnabled(True)
+            self.door_lbl.setEnabled(True)
+            self.leak_lbl.setEnabled(True)
+            self.TC1_fault_lbl.setEnabled(True)
+            self.TC1_lbl.setEnabled(True)
+            self.TC2_fault_lbl.setEnabled(True)
+            self.TC2_lbl.setEnabled(True)
+            self.lbl_logging.setEnabled(True)
+
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
 
 
     def stop_recording(self):
+
         if self.recording_thread == None:
             print("Recording thread not running")
             return
 
         self.recorder_stop_evt.set()
-        if self.recording_thread:
-            self.recording_thread = None
+        self.recording_thread.join()
+        self.recorder_stop_evt.clear()
+
         if self.arduino:
             self.arduino.close()
-            self.lbl_status.setText("Disconnected")
-            self.ambtemp_lbl.setText("Ambient Temp: --.-°C")
-            self.rH_lbl.setText("Relative Humidity: --.-%")
-            self.dewpoint_lbl.setText("Dew Point: --.-°C")
-            self.dhtstatus_lbl.setText("DHT Status: --")
-            self.door_lbl.setText("Door: --")
-            self.leak_lbl.setText("Leak: --")
-            self.TC1_lbl.setText("TC1 Temp: --.-°C")
-            self.TC1_fault_lbl.setText("TC1 Faults: --")
-            self.TC2_lbl.setText("TC2 Temp: --.-°C")
-            self.TC2_fault_lbl.setText("TC2 Faults: --")
-            self.btn_disconnect.setEnabled(False)
-            self.btn_connect.setEnabled(True)
+        
+        self.reset_GUI()
 
+    def error_GUI(self):
+        self.lbl_status.setText("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
+        self.ambtemp_lbl.setText("Ambient Temp: --.-°C")
+        self.rH_lbl.setText("Relative Humidity: --.-%")
+        self.dewpoint_lbl.setText("Dew Point: --.-°C")
+        self.dhtstatus_lbl.setText("DHT Status: --")
+        self.door_lbl.setText("Door: --")
+        self.leak_lbl.setText("Leak: --")
+        self.TC1_lbl.setText("TC1 Temp: --.-°C")
+        self.TC1_fault_lbl.setText("TC1 Faults: --")
+        self.TC2_lbl.setText("TC2 Temp: --.-°C")
+        self.TC2_fault_lbl.setText("TC2 Faults: --")
 
     def update_GUI(self, data):
+        if self.recording_thread is None:
+            return
+        if data == None:
+            self.error_signal.emit()
+            return
         self.lbl_status.setText("Connected" if data['Connected'] else "Disconnected")
         self.ambtemp_lbl.setText(f"Ambient Temp: {data['Ambient Temperature']}°C")
         self.rH_lbl.setText(f"Relative Humidity: {data['Relative Humidity']}%")
@@ -197,30 +191,67 @@ class ArduinoPanel(Panel):
         self.TC1_fault_lbl.setText(f"TC1 Faults: {', '.join(data['TC Faults'][0]) if data['TC Faults'][0] != 'No Faults' else 'No Faults'}")
         self.TC2_fault_lbl.setText(f"TC2 Faults: {', '.join(data['TC Faults'][1]) if data['TC Faults'][1] != 'No Faults' else 'No Faults'}")
 
+    def reset_GUI(self):
+        self.recording_thread = None
+        self.lbl_status.setText("Disconnected")
+        self.lbl_status.setStyleSheet("color: #e53935;")
+        self.ambtemp_lbl.setText("Ambient Temp: --.-°C")
+        self.rH_lbl.setText("Relative Humidity: --.-%")
+        self.dewpoint_lbl.setText("Dew Point: --.-°C")
+        self.dhtstatus_lbl.setText("DHT Status: --")
+        self.door_lbl.setText("Door: --")
+        self.leak_lbl.setText("Leak: --")
+        self.TC1_lbl.setText("TC1 Temp: --.-°C")
+        self.TC1_fault_lbl.setText("TC1 Faults: --")
+        self.TC2_lbl.setText("TC2 Temp: --.-°C")
+        self.TC2_fault_lbl.setText("TC2 Faults: --")
+        self.btn_disconnect.setEnabled(False)
+        self.btn_disconnect.setVisible(False)
+        self.btn_connect.setEnabled(True)
+        self.btn_connect.setVisible(True)
+        self.btn_logging.setEnabled(False)
+        self.ambtemp_lbl.setEnabled(False)
+        self.rH_lbl.setEnabled(False)
+        self.dewpoint_lbl.setEnabled(False)
+        self.dhtstatus_lbl.setEnabled(False)
+        self.door_lbl.setEnabled(False)
+        self.leak_lbl.setEnabled(False)
+        self.TC1_fault_lbl.setEnabled(False)
+        self.TC1_lbl.setEnabled(False)
+        self.TC2_fault_lbl.setEnabled(False)
+        self.TC2_lbl.setEnabled(False)
+        self.lbl_logging.setEnabled(False)
+
     def record(self):
         while not self.recorder_stop_evt.is_set():
-            data = self.arduino.get_data()
-            self.update_GUI_signal.emit(data)
+            try:
+                data = self.arduino.get_data()
+        
+                self.update_GUI_signal.emit(data)
 
-            if not data["DHT Status"]:
-                print("Restarting DHT")
-                self.arduino.restart_dht()
-                time.sleep(1)
+                if not data["DHT Status"]:
+                    print("Restarting DHT")
+                    self.arduino.restart_dht()
+                    time.sleep(1)
 
-            if self.log_status:
-                timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
-                maindir = Path(__file__).parent.parent
+                if self.log_status:
+                    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
+                    maindir = Path(__file__).parent.parent
 
-                resultdir = maindir / "Environmental Data" / "Arduino Data"
-                if not os.path.isdir(resultdir):
-                    os.makedirs(resultdir)
+                    resultdir = maindir / "Environmental Data" / "Arduino Data"
+                    if not os.path.isdir(resultdir):
+                        os.makedirs(resultdir)
 
-                resultdir.mkdir(exist_ok=True)
+                    resultdir.mkdir(exist_ok=True)
 
-                outfile = resultdir / f"sensor_data_{self.log_timestamp}.csv"
-                with open(outfile, 'a') as f:
-                    f.write(f"{timestamp}: {data}\n")
-            time.sleep(self.sample_time)
+                    outfile = resultdir / f"sensor_data_{self.log_timestamp}.csv"
+                    with open(outfile, 'a') as f:
+                        f.write(f"{timestamp}: {data}\n")
+                time.sleep(self.sample_time)
+            except Exception as e:
+                print(f"Error during recording: {e}")
+                self.disconnect_signal.emit()
+                break
 
     def toggle_log(self):
         self.log_status = not self.log_status

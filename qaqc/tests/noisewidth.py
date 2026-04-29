@@ -4,27 +4,32 @@ from qaqc import register, required
 from etlup.tamalero.Baseline import BaselineV0
 from etlup.tamalero.ReadoutBoardCommunication import ReadoutBoardCommunicationV0
 
-
-
 @register(NoisewidthV0)
 @required([ReadoutBoardCommunicationV0, BaselineV0])
 def test(session) -> NoisewidthV0:
     """
-    Runs the baseline test.
+    Uploads the noise widths from threshold scan run during the baseline test.
     If 'config' is provided (from TestSequence), it uses it as a base/configuration.
-    Returns a fully populated BaselineV0 instance.
-    """    
+    Returns a fully populated NoisewidthV0 instance.
+    """
+    slot = session.current_slot
+    rb = session.readout_board
+    module = rb.modules[slot]
+    etroc_noisewidths = []
+
+    for etroc in module.ETROCs:
+        if not etroc.is_connected():
+            print(f"ETROC {etroc.chip_no} not found")
+            etroc_noisewidths.append(np.zeros((16,16)).tolist())
+            continue
+
+        etroc_noisewidths.append(etroc.noise_width.tolist())
+
     data = session.current_base_data | {
-        'ambient_celcius': 20,
-        "etroc_0_Vtemp": 2713,
-        "etroc_1_Vtemp": 2713,
-        "etroc_2_Vtemp": 2713,
-        "etroc_3_Vtemp": 2713,
-        "bias_volts": 150,
-        "pos_0": np.zeros((16, 16)).tolist(),
-        "pos_1": np.zeros((16, 16)).tolist(),
-        "pos_2": np.zeros((16, 16)).tolist(),
-        "pos_3": np.zeros((16, 16)).tolist()
+        "pos_0": etroc_noisewidths[0],
+        "pos_1": etroc_noisewidths[1],
+        "pos_2": etroc_noisewidths[2],
+        "pos_3": etroc_noisewidths[3]
     }
     
     return NoisewidthV0(**data)

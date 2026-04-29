@@ -22,6 +22,21 @@ class HVPowerSupply():
                                 timeout=1)
         self.flush_input_buffer()
 
+    def __enter__(self):
+        self.set_voltage(0)
+        self.set_channel_off()
+        self.wait_ramp(.5)
+        return self
+    
+    def __exit__(self, type, value, traceback):
+        print("Exiting, ramping down HV now")
+        self.set_voltage(0)
+        self.set_channel_off()
+        self.wait_ramp(.5)
+        self.close()
+        print("Done ramping down")
+
+
     def close(self):
         if self.ser != None:
             self.ser.close()
@@ -142,6 +157,7 @@ class HVPowerSupply():
             self.wait_ramp(delay)
         except ValueError as e:
             print(e)
+            print(voltages, currents, kfactors)
         vmon_resp = self.read_vmon()
         imon_resp = self.read_imon()
         vmon = self.extract_float_value(vmon_resp)
@@ -158,6 +174,7 @@ class HVPowerSupply():
                 self.wait_ramp(delay)
             except ValueError as e:
                 print(e)
+                print(voltages, currents, kfactors)
                 break
             vmon_resp = self.read_vmon()
             imon_resp = self.read_imon()
@@ -174,6 +191,7 @@ class HVPowerSupply():
             kfactors.append(kfactor)
         if not leave_on:
             self.set_channel_off()
+        print(voltages, currents, kfactors)
         return voltages, currents, kfactors
     
     def plot_IV_curve(self, start_v, stop_v, step_v, curr_limit, moduleid, leave_on=False, delay=10):

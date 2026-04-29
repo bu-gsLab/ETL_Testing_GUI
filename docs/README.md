@@ -48,7 +48,7 @@ To download the IPbus software, move to the `scripts/` directory and run `source
 
 ### General setup
 
-First, you need to setup the virtual environment, for which we are using Astral's uv. To set this up, navigate to the project root directory and run
+First, you need to setup the virtual environment, for which we are using Astral's uv. To set this up, navigate to the **project root directory** and run
 
 ```source scripts/setup_env.sh```
 
@@ -62,6 +62,7 @@ This script does the following:
     - Installs and pins python version (3.14.2)
     - Initializes venv and installs project dependencies
 - Adds Vivado to path if not already
+- Loads the udev rules
 
 ### Flashing firmware
 You can follow the directions here on the [rbdocs](https://etl-rb.docs.cern.ch/Firmware/rb-firmware/#firmware-for-kcu-105)

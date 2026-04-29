@@ -53,4 +53,10 @@ else
 fi
 source ~/.bashrc
 
+# Load udev rules
+echo "Loading udev rules"
+if [ -f "scripts/load_udev.sh" ]; then
+    source scripts/load_udev.sh
+fi
+
 echo "Setup complete!"

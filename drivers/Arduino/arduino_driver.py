@@ -72,19 +72,26 @@ class Arduino:
             
             self.door = bool(float(data_list[1]))
             self.leak = bool(float(data_list[2]))
+            TC1_temp = float(data_list[3])
+            TC2_temp = float(data_list[5])
+            if TC1_temp < 0:
+                TC1_temp = abs(TC1_temp) - 2048.0
+            
+            if TC2_temp < 0:
+                TC2_temp = abs(TC2_temp) - 2048.0
 
-            self.TCtemps = [float(data_list[3]), float(data_list[5])]
+            self.TCtemps = [TC1_temp, TC2_temp]
             TC1faultbyte = int(data_list[4])
             TC2faultbyte = int(data_list[6])
             if TC1faultbyte == 0:
                 self.TCfaults[0] = "No Faults"
             else:
-                self.TCfaults[0] = [name for i, name in enumerate(self.TCFaultNames) if (TC1faultbyte & (1 << i))].join(", ")
+                self.TCfaults[0] = [name for i, name in enumerate(self.TCFaultNames) if (TC1faultbyte & (1 << i))]
 
             if TC2faultbyte == 0:
                 self.TCfaults[1] = "No Faults"
             else:
-                self.TCfaults[1] = [name for i, name in enumerate(self.TCFaultNames) if (TC2faultbyte & (1 << i))].join(", ")
+                self.TCfaults[1] = [name for i, name in enumerate(self.TCFaultNames) if (TC2faultbyte & (1 << i))]
 
             self.ambtemp = float(data_list[7])
             self.rH = float(data_list[8])
@@ -109,7 +116,10 @@ class Arduino:
             self.leak = bool(float(data_list[2]))
 
             if last_index >= 3:
-                self.TCtemps[0] = float(data_list[3])
+                TC1_temp = float(data_list[3])
+                if TC1_temp < 0:
+                    TC1_temp = abs(TC1_temp) - 2048.0
+                self.TCtemps[0] = TC1_temp
             else:
                 self.TCtemps[0] = None
 
@@ -118,12 +128,15 @@ class Arduino:
                 if TC1faultbyte == 0:
                     self.TCfaults[0] = "No Faults"
                 else:
-                    self.TCfaults[0] = [name for i, name in enumerate(self.TCFaultNames) if (TC1faultbyte & (1 << i))].join(", ")
+                    self.TCfaults[0] = [name for i, name in enumerate(self.TCFaultNames) if (TC1faultbyte & (1 << i))]
             else: 
                 self.TCfaults[0] = None
                 
             if last_index >= 5:
-                self.TCtemps[1] = float(data_list[5])
+                TC2_temp = float(data_list[5])            
+                if TC2_temp < 0:
+                    TC2_temp = abs(TC2_temp) - 2048.0
+                self.TCtemps[1] = TC2_temp
             else:
                 self.TCtemps[1] = None
 
@@ -132,7 +145,7 @@ class Arduino:
                 if TC2faultbyte == 0:
                     self.TCfaults[1] = "No Faults"
                 else:
-                    self.TCfaults[1] = [name for i, name in enumerate(self.TCFaultNames) if (TC2faultbyte & (1 << i))].join(", ")
+                    self.TCfaults[1] = [name for i, name in enumerate(self.TCFaultNames) if (TC2faultbyte & (1 << i))]
             else:
                 self.TCfaults[1] = None
 
