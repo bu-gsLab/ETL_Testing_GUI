@@ -146,6 +146,8 @@ class LVPanel(Panel):
 
 
     def update_GUI(self, data):
+        if self.lv_thread is None:
+            return
         if data["output"]:
             self.lbl_power.setText("ON")
             self.lbl_power.setStyleSheet("color: #16a34a;")
@@ -202,7 +204,7 @@ class LVPanel(Panel):
             return
         
         self.lv_stop_evt.set()
-        self.lv_thread.join(timeout=self.sample_time*2)
+        self.lv_thread.join()
         self.lv_stop_evt.clear()
 
         self.lv_thread = None

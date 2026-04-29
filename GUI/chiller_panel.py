@@ -147,7 +147,7 @@ class ChillerPanel(Panel):
             return
         
         self.chiller_stop_evt.set()
-        self.chiller_thread.join(timeout=self.sample_time*2)
+        self.chiller_thread.join()
         self.chiller_stop_evt.clear()
         self.chiller_thread = None
         
@@ -192,6 +192,8 @@ class ChillerPanel(Panel):
         self.input_set_temp.clear()
 
     def update_GUI(self, data):
+        if self.chiller_thread is None:
+            return
         self.lbl_curr_temp.setText(f"Current Temp: {data['curr_temp']:.2f} °C")
         self.lbl_set_temp.setText(f"Set Temp: {data['set_temp']:.2f} °C")
         if data["power"] == '1':

@@ -189,7 +189,7 @@ class HVPanel(Panel):
             return
         
         self.hv_stop_evt.set()
-        self.hv_thread.join(timeout=self.sample_time*2)
+        self.hv_thread.join()
         self.hv_stop_evt.clear()
 
         self.hv_thread = None
@@ -287,6 +287,9 @@ class HVPanel(Panel):
             time.sleep(self.sample_time)
 
     def update_GUI(self, data):
+        if self.hv_thread is None:
+            return
+
         if data["output"]:
             self.lbl_power.setText("ON")
             self.lbl_power.setStyleSheet("color: #16a34a;")

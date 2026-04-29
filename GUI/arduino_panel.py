@@ -151,7 +151,7 @@ class ArduinoPanel(Panel):
             return
 
         self.recorder_stop_evt.set()
-        self.recording_thread.join(timeout=self.sample_time*2)
+        self.recording_thread.join()
         self.recorder_stop_evt.clear()
 
         if self.arduino:
@@ -174,6 +174,8 @@ class ArduinoPanel(Panel):
         self.TC2_fault_lbl.setText("TC2 Faults: --")
 
     def update_GUI(self, data):
+        if self.recording_thread is None:
+            return
         if data == None:
             self.error_signal.emit()
             return
