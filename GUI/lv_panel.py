@@ -217,7 +217,7 @@ class LVPanel(Panel):
             self.lbl_mon_voltage.setText("VMON: --- V")
             self.lbl_mon_current.setText("IMON: ---.- A")
             self.lbl_power.setText("---")
-            self.lbl_power.setStyleSheet("color: #ffffff")
+            self.lbl_power.setStyleSheet("")
             self.btn_disconnect.setEnabled(False)
             self.btn_disconnect.setVisible(False)
             self.btn_connect.setEnabled(True)

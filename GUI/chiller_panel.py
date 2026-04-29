@@ -157,7 +157,7 @@ class ChillerPanel(Panel):
         self.lbl_status.setText("Disconnected")
         self.lbl_status.setStyleSheet("color: #e53935;")
         self.lbl_power.setText("---")
-        self.lbl_power.setStyleSheet("color: #ffffff")
+        self.lbl_power.setStyleSheet("")
         self.lbl_set_temp.setText("Set Temp: --- °C")
         self.lbl_curr_temp.setText("Current Temp: --- °C")
         self.btn_disconnect.setEnabled(False)
