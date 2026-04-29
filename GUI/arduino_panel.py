@@ -54,21 +54,16 @@ class ArduinoPanel(Panel):
         button_row.addWidget(self.btn_logging)
         button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
 
-        def make_label(text):
-            lbl = QLabel(text)
-            #lbl.setFont(QFont("Calibri", 12))
-            return lbl
-
-        self.ambtemp_lbl = make_label("Ambient Temp: --.-°C")
-        self.rH_lbl = make_label("Relative Humidity: --.-%")
-        self.dewpoint_lbl = make_label("Dew Point: --.-°C")
-        self.dhtstatus_lbl = make_label("DHT Status: --")
-        self.door_lbl = make_label("Door: --")
-        self.leak_lbl = make_label("Leak: --")
-        self.TC1_lbl = make_label("TC1 Temp: --.-°C")
-        self.TC1_fault_lbl = make_label("TC1 Faults: --")
-        self.TC2_lbl = make_label("TC2 Temp: --.-°C")
-        self.TC2_fault_lbl = make_label("TC2 Faults: --")
+        self.ambtemp_lbl = QLabel("Ambient Temp: --.-°C")
+        self.rH_lbl = QLabel("Relative Humidity: --.-%")
+        self.dewpoint_lbl = QLabel("Dew Point: --.-°C")
+        self.dhtstatus_lbl = QLabel("DHT Status: --")
+        self.door_lbl = QLabel("Door: --")
+        self.leak_lbl = QLabel("Leak: --")
+        self.TC1_lbl = QLabel("TC1 Temp: --.-°C")
+        self.TC1_fault_lbl = QLabel("TC1 Faults: --")
+        self.TC2_lbl = QLabel("TC2 Temp: --.-°C")
+        self.TC2_fault_lbl = QLabel("TC2 Faults: --")
 
         self.ambtemp_lbl.setEnabled(False)
         self.rH_lbl.setEnabled(False)
