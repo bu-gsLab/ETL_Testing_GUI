@@ -1,5 +1,9 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_BASE="$(cd "$SCRIPT_DIR/.." && pwd)"
+TAMALERO_BASE="${TAMALERO_BASE:-$PROJECT_BASE/module_test_sw}"
+
 echo "Setting up Python project with uv..."
 
 # Check and install curl if needed
@@ -16,11 +20,10 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 # Setup tamalero submodule
-echo "Setting up tamalero submodule..."
-if [ -f "module_test_sw/setup.sh" ]; then
-    cd "module_test_sw"
-    source "setup.sh"
-    cd ".."
+if [ -f "$TAMALERO_BASE/setup.sh" ]; then
+    pushd "$TAMALERO_BASE" > /dev/null
+    source "$TAMALERO_BASE/setup.sh"
+    popd > /dev/null
 fi
 
 # Recreate uv env with system-site-packages so uHAL becomes visible
@@ -55,8 +58,8 @@ source ~/.bashrc
 
 # Load udev rules
 echo "Loading udev rules"
-if [ -f "scripts/load_udev.sh" ]; then
-    source scripts/load_udev.sh
+if [ -f "$SCRIPT_DIR/load_udev.sh" ]; then
+    source "$SCRIPT_DIR/load_udev.sh"
 fi
 
 echo "Setup complete!"
