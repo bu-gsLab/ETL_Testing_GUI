@@ -69,19 +69,19 @@ def test(session) -> BaselineV0:
     sensor_to_current = {"FBK": 100, "HPK": 10}
     compliance = sensor_to_current[sensor] * hybrid_num
 
-    with HVPowerSupply("hv_supply") as hv:
+    with HVPowerSupply("/dev/hv_supply") as hv:
         hv.set_voltage(bias)
         hv.set_current_limit(compliance)
         hv.set_channel_on()
         hv.wait_ramp(0.5)
 
         for etroc in module.ETROCs:
-            etroc_vtemps.append(etroc.check_temp())
             if not etroc.is_connected():
                 print(f"ETROC {etroc.chip_no} not found")
                 etroc_vtemps.append(None)
                 etroc_baselines.append(np.zeros((16,16)).tolist())
                 continue
+            etroc_vtemps.append(etroc.check_temp())
                 
             print(f"Found connected ETROC {etroc.chip_no} on module")
 

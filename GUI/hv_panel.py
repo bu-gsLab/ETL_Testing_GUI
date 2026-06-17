@@ -143,6 +143,7 @@ class HVPanel(Panel):
         self.lbl_set_voltage.setEnabled(False)
         self.lbl_mon_current.setEnabled(False)
         self.lbl_mon_voltage.setEnabled(False)
+        self.ramp = None
 
 
 
@@ -258,6 +259,12 @@ class HVPanel(Panel):
             self.imon = self.hv.extract_float_value(self.hv.read_imon())
             self.status = int(self.hv.read_status()['VAL'])
             self.output = self.status & 1
+            if self.status & 2:
+                self.ramp = "Ramp Up"
+            elif self.status & 4:
+                self.ramp = "Ramp Down"
+            else:
+                self.ramp = None
 
             self.data["vset"] = self.vset
             self.data["vmon"] = self.vmon
@@ -291,11 +298,20 @@ class HVPanel(Panel):
             return
 
         if data["output"]:
-            self.lbl_power.setText("ON")
-            self.lbl_power.setStyleSheet("color: #16a34a;")
+            if not self.ramp:
+                self.lbl_power.setText("ON")
+                self.lbl_power.setStyleSheet("color: #16a34a;")
+            else:
+                self.lbl_power.setText(self.ramp)
+                self.lbl_power.setStyleSheet("color: #facc15")
         else:
-            self.lbl_power.setText("OFF")
-            self.lbl_power.setStyleSheet("color: #e53935;")
+            if not self.ramp:
+                self.lbl_power.setText("OFF")
+                self.lbl_power.setStyleSheet("color: #e53935;")
+            else:
+                self.lbl_power.setText(self.ramp)
+                self.lbl_power.setStyleSheet("color: #facc15")
+
 
         self.lbl_set_voltage.setText(f"VSET: {data['vset']} V")
         self.lbl_set_current.setText(f"ISET: {data['iset']} uA")

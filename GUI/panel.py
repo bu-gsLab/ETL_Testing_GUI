@@ -43,9 +43,9 @@ class Panel(QFrame):
         QPushButton#greenButton:pressed {{ background-color: #15803d; }}
         QPushButton#greenButton:disabled {{ background-color: #14532d; color: #9aa5b1; }}
 
-        QPushButton#neutralButton {{ background-color: #4b5563; color: #ffffff; }}
-        QPushButton#neutralButton:hover {{ background-color: #6b7280; }}
-        QPushButton#neutralButton:pressed {{ background-color: #374151; }}
+        QPushButton#neutralButton {{ background-color: #0055ff; color: #ffffff; }}
+        QPushButton#neutralButton:hover {{ background-color: #1a6aff; }}
+        QPushButton#neutralButton:pressed {{ background-color: #0044cc; }}
         QPushButton#neutralButton:disabled {{ background-color: #1f2937; color: #9aa5b1; }}
 
         QPushButton#redButton {{ background-color: #e53935; color: #ffffff; }}
