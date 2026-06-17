@@ -1,0 +1,7 @@
+[telescope-configs]
+kcu-ip-add = "insert kcu ip address here"
+kcu-firmware-vers = "insert kcu firmware vers here"
+tele_layer = 1
+RB_vers = 3
+RB_firmware = "insert rb firmware here"
+RB_config = "module_v2"
