@@ -1,0 +1,6 @@
+[ts_config]
+kcu_ip = "insert kcu ip address here"
+kcu_firmware_ver = "insert firmware version here"
+layer = 1
+RB_version = "insert RB version here"
+RB_config = "insert RB config here"
