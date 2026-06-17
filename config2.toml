@@ -1,0 +1,27 @@
+[telescope_configs]
+
+[telescope.kcu]
+kcu-ip-address = "192.168.0.10"
+kcu-firmware-vers = "current version of kcu firmware"
+
+[telescope.readout_board]
+rb_name = "RBF3"
+rb_vers = "version of readout board"
+rb_config = "modulev2"
+
+[telescope.power_supplies]
+bias_voltage = 50
+HV_channel = 2
+external_vref = true
+
+[telescope.info]
+l1a delay = 37 
+self_triggering = true
+
+[gui.configs]
+arduino_status = true
+arduino_port = "insert information about port here"
+chiller_status = true
+chiller_temperature = 17 #celsius
+hv_power = true
+lv_power = true
