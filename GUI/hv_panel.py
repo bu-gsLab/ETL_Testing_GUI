@@ -4,7 +4,7 @@ import serial
 import time
 import os
 
-from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QComboBox
 from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -40,7 +40,8 @@ class HVPanel(Panel):
         self.lbl_status.setStyleSheet("color: #e53935;")
 
         self.channel_combobox = QComboBox()
-        self.channel_combobox.addItems(["CH1", "CH2"])
+        self.channel_combobox.addItems(["CH0", "CH1", "CH2", "CH3"])
+        self.channel_combobox.setFixedSize(100,40)
         
         self.btn_logging = QPushButton("Toggle Logging")
         self.btn_logging.setObjectName("neutralButton")

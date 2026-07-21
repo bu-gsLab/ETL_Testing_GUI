@@ -41,6 +41,7 @@ class LVPanel(Panel):
 
         self.channel_combobox = QComboBox()
         self.channel_combobox.addItems(["CH1", "CH2"])
+        self.channel_combobox.setFixedSize(100,40)
 
 
         self.btn_logging = QPushButton("Toggle Logging")

@@ -37,6 +37,7 @@ class Panel(QFrame):
             font-weight: 400;
         }}
         QPushButton:disabled {{ color: #9aa5b1; }}
+        QComboBox:disabled {{ color: #9aa5b1; }}
 
         QPushButton#greenButton {{ background-color: #16a34a; color: #ffffff; }}
         QPushButton#greenButton:hover {{ background-color: #22c55e; }}
