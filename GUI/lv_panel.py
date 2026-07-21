@@ -4,7 +4,7 @@ import serial
 import time
 import os
 
-from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QComboBox
 from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -39,6 +39,10 @@ class LVPanel(Panel):
         self.lbl_status = QLabel("Disconnected")
         self.lbl_status.setStyleSheet("color: #e53935;")
 
+        self.channel_combobox = QComboBox()
+        self.channel_combobox.addItems(["CH1", "CH2"])
+
+
         self.btn_logging = QPushButton("Toggle Logging")
         self.btn_logging.setObjectName("neutralButton")
         self.btn_logging.clicked.connect(self.toggle_log)
@@ -50,6 +54,9 @@ class LVPanel(Panel):
         button_row.addWidget(self.btn_connect)
         button_row.addWidget(self.btn_disconnect)
         button_row.addWidget(self.lbl_status, 1, Qt.AlignLeft)
+        button_row.addStretch(1)
+        button_row.addWidget(self.channel_combobox)
+        self.channel_combobox.setEnabled(False)
         button_row.addStretch(1)
         button_row.addWidget(self.btn_logging)
         button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
@@ -169,8 +176,7 @@ class LVPanel(Panel):
         
         self.lv_stop_evt = threading.Event()
         try:
-            # TODO: Add more channels
-            self.lv = LVPowerSupply("192.168.0.30", channel=1)
+            self.lv = LVPowerSupply("192.168.0.30", channel=self.channel_combobox.currentIndex() + 1)
             self.lbl_status.setText("Connected")
             self.lbl_status.setStyleSheet("color: #16a34a;")
             self.lv_stop_evt.clear()
@@ -178,6 +184,7 @@ class LVPanel(Panel):
             self.lv_thread.start()
             self.btn_disconnect.setEnabled(True)
             self.btn_disconnect.setVisible(True)
+            self.channel_combobox.setEnabled(True)
             self.btn_connect.setEnabled(False)
             self.btn_connect.setVisible(False)
             self.btn_power.setEnabled(True)
@@ -220,6 +227,7 @@ class LVPanel(Panel):
             self.lbl_power.setStyleSheet("")
             self.btn_disconnect.setEnabled(False)
             self.btn_disconnect.setVisible(False)
+            self.channel_combobox.setEnabled(False)
             self.btn_connect.setEnabled(True)
             self.btn_connect.setVisible(True)
             self.btn_power.setEnabled(False)
@@ -266,6 +274,7 @@ class LVPanel(Panel):
                     else:
                         self.lv.set_channel_on()
 
+            self.lv.channel = self.channel_combobox.currentIndex() + 1
             self.vset = self.lv.read_vset()
             self.vmon = self.lv.read_vmon()
             self.iset = self.lv.read_iset()
