@@ -38,8 +38,10 @@ class HVPanel(Panel):
 
         self.lbl_status = QLabel("Disconnected")
         self.lbl_status.setStyleSheet("color: #e53935;")
-        
 
+        self.channel_combobox = QComboBox()
+        self.channel_combobox.addItems(["CH1", "CH2"])
+        
         self.btn_logging = QPushButton("Toggle Logging")
         self.btn_logging.setObjectName("neutralButton")
         self.btn_logging.clicked.connect(self.toggle_log)
@@ -50,6 +52,9 @@ class HVPanel(Panel):
         button_row.addWidget(self.btn_connect)
         button_row.addWidget(self.btn_disconnect)
         button_row.addWidget(self.lbl_status, 1, Qt.AlignLeft)
+        button_row.addStretch(1)
+        button_row.addWidget(self.channel_combobox)
+        self.channel_combobox.setEnabled(False)
         button_row.addStretch(1)
         button_row.addWidget(self.btn_logging)
         button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
@@ -154,8 +159,7 @@ class HVPanel(Panel):
         
         self.hv_stop_evt = threading.Event()
         try:
-            # TODO: Add more channels
-            self.hv = HVPowerSupply("/dev/hv_supply", baud=9600, bd_addr=0, channel=0)
+            self.hv = HVPowerSupply("/dev/hv_supply", baud=9600, bd_addr=0, channel=self.channel_combobox.currentIndex())
             self.lbl_status.setText("Connected")
             self.lbl_status.setStyleSheet("color: #16a34a;")
             self.hv_stop_evt.clear()
@@ -163,6 +167,7 @@ class HVPanel(Panel):
             self.hv_thread.start()
             self.btn_disconnect.setEnabled(True)
             self.btn_disconnect.setVisible(True)
+            self.channel_combobox.setEnabled(True)
             self.btn_connect.setEnabled(False)
             self.btn_connect.setVisible(False)
             self.btn_power.setEnabled(True)
@@ -206,6 +211,7 @@ class HVPanel(Panel):
             self.lbl_power.setStyleSheet("")
             self.btn_disconnect.setEnabled(False)
             self.btn_disconnect.setVisible(False)
+            self.channel_combobox.setEnabled(False)
             self.btn_connect.setEnabled(True)
             self.btn_connect.setVisible(True)
             self.btn_power.setEnabled(False)
@@ -252,7 +258,7 @@ class HVPanel(Panel):
                         self.hv.set_channel_off()
                     else:
                         self.hv.set_channel_on()
-    
+            self.hv.channel = self.channel_combobox.currentIndex()
             self.vset = self.hv.extract_float_value(self.hv.read_vset())
             self.vmon = self.hv.extract_float_value(self.hv.read_vmon())
             self.iset = self.hv.extract_float_value(self.hv.read_iset())
