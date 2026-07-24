@@ -6,7 +6,11 @@ from qaqc import TestSequence
 from typing_extensions import List, Dict
 from etlup import TestType, now_utc
 from etlup.base_model import ConstructionBase
-from qaqc.errors import FailedTestCriteriaError, MissingRequiredTestError
+from qaqc.errors import (
+    FatalTestError,
+    MissingRequiredTestError,
+    NonFatalTestError,
+)
 
 class RbSizeTuple(tuple):
     """
@@ -56,8 +60,17 @@ class Session:
         self.results: RbSizeTuple[Dict[Any,Any]] = RbSizeTuple(
             [{} for _ in range(self.rb_size)], 
             size=self.rb_size)
+        self.nonfatal_failures = RbSizeTuple(
+            [set() for _ in range(self.rb_size)],
+            size=self.rb_size)
+        self.fatal_error: Optional[Exception] = None
+        self.status_callback = None
 
         self.current_base_data: dict = None # current base data for pydantic etlup modules
+
+    def report_status(self, message: str):
+        if self.status_callback is not None:
+            self.status_callback(message)
 
     @property
     def active_slots(self) -> List[int]:
@@ -101,15 +114,37 @@ class Session:
         for test in test_sequence:
             self.current_base_data = self.get_base_data(
                 test.model, slot)
+            if self.fatal_error is not None:
+                error = FatalTestError(
+                    f"Skipped after fatal failure: {self.fatal_error}"
+                )
+                session_results[test.model] = None
+                yield test, error
+                continue
             try:
                 results = test.run(self)
                 if not isinstance(results, test.model):
-                    raise ValueError(f"Tests returned need to be of pydantic model: {test.model} but got {type(results)}")
+                    raise ValueError(
+                        f"Test must return {test.model.__name__}, "
+                        f"but returned {type(results).__name__}"
+                    )
                 session_results[test.model] = results
                 yield test, results
-            except (FailedTestCriteriaError, MissingRequiredTestError) as e:
+            except NonFatalTestError as e:
                 session_results[test.model] = None
+                self.nonfatal_failures[slot].add(test.model)
                 yield test, e
+            except (FatalTestError, MissingRequiredTestError) as e:
+                session_results[test.model] = None
+                self.fatal_error = e
+                yield test, e
+            except Exception as e:
+                error = FatalTestError(
+                    f"Unexpected fatal error in {test.model.__name__}: {e}"
+                )
+                session_results[test.model] = None
+                self.fatal_error = error
+                yield test, error
 
         self.current_base_data = None
 
@@ -142,4 +177,8 @@ class Session:
         self.results = RbSizeTuple(
             [{} for _ in range(self.rb_size)], 
             size=self.rb_size)
+        self.nonfatal_failures = RbSizeTuple(
+            [set() for _ in range(self.rb_size)],
+            size=self.rb_size)
+        self.fatal_error = None
         self.current_base_data = None

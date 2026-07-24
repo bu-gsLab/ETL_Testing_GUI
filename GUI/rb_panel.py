@@ -23,13 +23,11 @@ class RBPanel(Panel):
         super().__init__(f"RB {rb_pos}")
 
         self.rb_str_to_tests = {
-            "RB Communication": ReadoutBoardCommunication.ReadoutBoardCommunicationV0,
-            "MUX64 Values": Mux64Values.Mux64ValuesV0
+            "RB Communication": ReadoutBoardCommunication.ReadoutBoardCommunicationV0
         }
 
         self.rb_tests_to_str = {
-            ReadoutBoardCommunication.ReadoutBoardCommunicationV0: "RB Communication",
-            Mux64Values.Mux64ValuesV0: "MUX64 Values"
+            ReadoutBoardCommunication.ReadoutBoardCommunicationV0: "RB Communication"
         }
 
         self.setObjectName("RBPanel")
@@ -38,7 +36,7 @@ class RBPanel(Panel):
 
         self.rb_id_lbl = QLabel("RB Serial #: ")
         self.rb_id_field = QLineEdit()
-        self.rb_id_field.setFixedSize(130,25)
+        self.rb_id_field.setFixedWidth(130)
         self.rb_id_row = QHBoxLayout()
         self.rb_id_row.addWidget(self.rb_id_lbl)
         self.rb_id_row.addWidget(self.rb_id_field)
@@ -47,7 +45,7 @@ class RBPanel(Panel):
         self.test_select_row = QHBoxLayout()
         container = QWidget()
         self.scroll_container = CheckableComboBox(container)
-        self.scroll_container.setFixedSize(175,20)
+        self.scroll_container.setFixedWidth(175)
 
         self.scroll_container.addItem("Select tests...")
         self.scroll_container.model().item(0, 0).setFlags(Qt.NoItemFlags)

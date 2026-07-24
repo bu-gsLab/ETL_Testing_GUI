@@ -12,17 +12,27 @@ from .panel import Panel
 from .helpers.checkable_combobox import CheckableComboBox
 
 from etlup.tamalero import *
+from qaqc.tests.charge_injection import ChargeInjectionV0
 
 class ModulePanel(Panel):
     def __init__(self, slot_no):
         super().__init__(f"Slot {slot_no}")
         self.slot_no = slot_no
         self.module_str_to_tests = {
-            "Threshold": [Baseline.BaselineV0, Noisewidth.NoisewidthV0]
+            "Threshold Calibration": [
+                Baseline.BaselineV0,
+                Noisewidth.NoisewidthV0,
+            ],
+            "Charge Injection": [
+                Baseline.BaselineV0,
+                Noisewidth.NoisewidthV0,
+                ChargeInjectionV0,
+            ],
         }
         self.module_tests_to_str = {
             Baseline.BaselineV0: "Baseline",
-            Noisewidth.NoisewidthV0: "Noise Width"
+            Noisewidth.NoisewidthV0: "Noise Width",
+            ChargeInjectionV0: "Charge Injection",
         }
 
         self.setObjectName("ModulePanel")
@@ -38,7 +48,7 @@ class ModulePanel(Panel):
         self.module_id_inputbox.setEnabled(False)
         self.module_id_label.hide()
         self.module_id_inputbox.hide()
-        self.module_id_inputbox.setFixedSize(100,25)
+        self.module_id_inputbox.setFixedWidth(100)
         self.module_id_row.addWidget(self.module_id_label)
         self.module_id_row.addWidget(self.module_id_inputbox)
         self.module_id_row.addStretch()
@@ -47,6 +57,7 @@ class ModulePanel(Panel):
         self.test_select_row = QHBoxLayout()
         container = QWidget()
         self.scroll_container = CheckableComboBox(container)
+        self.scroll_container.setMinimumWidth(210)
 
         self.scroll_container.addItem("Select tests...")
         self.scroll_container.model().item(0, 0).setFlags(Qt.NoItemFlags)
@@ -68,7 +79,7 @@ class ModulePanel(Panel):
         self.bias_input.setEnabled(False)
         self.bias_input_label.hide()
         self.bias_input.hide()
-        self.bias_input.setFixedSize(50,23)
+        self.bias_input.setFixedWidth(50)
         self.bias_input_row.addWidget(self.bias_input_label)
         self.bias_input_row.addWidget(self.bias_input)
         self.bias_input_row.addStretch()

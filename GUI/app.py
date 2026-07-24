@@ -46,9 +46,16 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    QApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    )
+
     app = QApplication(sys.argv)
     app.setStyle("Fusion") 
     app.setWindowIcon(QIcon(str(gui_dir / "icon.png")))
     window = MainWindow()
+    window.resize(1200, 800)
     window.show()
     sys.exit(app.exec_())

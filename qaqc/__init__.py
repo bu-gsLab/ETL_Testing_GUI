@@ -28,8 +28,15 @@ def required(required_tests: List[TestType]):
         @functools.wraps(func)
         def wrapper(session, *args, **kwargs):
             for req in required_tests:
-                if not any(req in d for d in session.results):
-                    raise MissingRequiredTestError(f"Required test {req} was not run for {func.__name__}.")
+                prerequisite_result = session.results[session.current_slot].get(req)
+                prerequisite_is_nonfatal = (
+                    req in session.nonfatal_failures[session.current_slot]
+                )
+                if prerequisite_result is None and not prerequisite_is_nonfatal:
+                    raise MissingRequiredTestError(
+                        f"Required test {req.__name__} did not pass; "
+                        f"automatically failing {func.__name__}."
+                    )
             return func(session, *args, **kwargs)
         return wrapper
     return decorator

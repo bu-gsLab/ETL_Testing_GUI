@@ -41,7 +41,7 @@ class LVPanel(Panel):
 
         self.channel_combobox = QComboBox()
         self.channel_combobox.addItems(["CH1", "CH2"])
-        self.channel_combobox.setFixedSize(100,40)
+        self.channel_combobox.setFixedWidth(100)
 
 
         self.btn_logging = QPushButton("Toggle Logging")
@@ -97,7 +97,7 @@ class LVPanel(Panel):
         self.lbl_set_voltage_field = QLabel("Set Voltage (V): ")
         self.lbl_set_voltage_field.setEnabled(False)
         self.set_voltage_field = QLineEdit(parent=self)
-        self.set_voltage_field.setFixedSize(60,25)
+        self.set_voltage_field.setFixedWidth(60)
         self.btn_vset = QPushButton("Set")
         self.btn_vset.setObjectName("neutralButton")
         self.btn_vset.clicked.connect(self.set_voltage)
@@ -106,7 +106,7 @@ class LVPanel(Panel):
         self.lbl_set_current_field = QLabel("Set Current Limit (A):" )
         self.lbl_set_current_field.setEnabled(False)
         self.set_current_field = QLineEdit(parent=self)
-        self.set_current_field.setFixedSize(60,25)
+        self.set_current_field.setFixedWidth(60)
         self.btn_iset = QPushButton("Set")
         self.btn_iset.setObjectName("neutralButton")
         self.btn_iset.clicked.connect(self.set_current)

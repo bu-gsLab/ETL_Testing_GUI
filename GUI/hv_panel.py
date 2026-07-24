@@ -41,7 +41,7 @@ class HVPanel(Panel):
 
         self.channel_combobox = QComboBox()
         self.channel_combobox.addItems(["CH0", "CH1", "CH2", "CH3"])
-        self.channel_combobox.setFixedSize(100,40)
+        self.channel_combobox.setFixedWidth(100)
         
         self.btn_logging = QPushButton("Toggle Logging")
         self.btn_logging.setObjectName("neutralButton")
@@ -89,7 +89,7 @@ class HVPanel(Panel):
 
         self.lbl_set_voltage_field = QLabel("Set Voltage (V): ")
         self.set_voltage_field = QLineEdit(parent=self)
-        self.set_voltage_field.setFixedSize(60,25)
+        self.set_voltage_field.setFixedWidth(60)
         self.set_voltage_field.setEnabled(False)
         self.btn_vset = QPushButton("Set")
         self.btn_vset.setObjectName("neutralButton")
@@ -98,7 +98,7 @@ class HVPanel(Panel):
 
         self.lbl_set_current_field = QLabel("Set Current Limit (uA):" )
         self.set_current_field = QLineEdit(parent=self)
-        self.set_current_field.setFixedSize(60,25)
+        self.set_current_field.setFixedWidth(60)
         self.set_current_field.setEnabled(False)
         self.btn_iset = QPushButton("Set")
         self.btn_iset.setObjectName("neutralButton")
@@ -130,8 +130,6 @@ class HVPanel(Panel):
         main_layout.addLayout(mon_label_row)
         main_layout.addLayout(input_row)
 
-
-
         self.subgrid.addLayout(main_layout, 1, 0, 5, 5, Qt.AlignTop)
         self.sample_time = 0.5
 
@@ -150,8 +148,6 @@ class HVPanel(Panel):
         self.lbl_mon_current.setEnabled(False)
         self.lbl_mon_voltage.setEnabled(False)
         self.ramp = None
-
-
 
     def start_hv(self):
         if self.hv_thread != None:

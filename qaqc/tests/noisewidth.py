@@ -3,6 +3,7 @@ from etlup.tamalero.Noisewidth import NoisewidthV0
 from qaqc import register, required
 from etlup.tamalero.Baseline import BaselineV0
 from etlup.tamalero.ReadoutBoardCommunication import ReadoutBoardCommunicationV0
+from qaqc.errors import FatalTestError, NonFatalTestError
 
 @register(NoisewidthV0)
 @required([ReadoutBoardCommunicationV0, BaselineV0])
@@ -16,6 +17,7 @@ def test(session) -> NoisewidthV0:
     rb = session.readout_board
     module = rb.modules[slot]
     etroc_noisewidths = []
+    session.report_status("Collecting noise-width results...")
 
     for etroc in module.ETROCs:
         if not etroc.is_connected():
@@ -24,6 +26,23 @@ def test(session) -> NoisewidthV0:
             continue
 
         etroc_noisewidths.append(etroc.noise_width.tolist())
+
+    noisewidth_values = np.asarray(etroc_noisewidths)
+    zero_pixels = int(np.count_nonzero(noisewidth_values == 0))
+    if zero_pixels == noisewidth_values.size:
+        raise FatalTestError("All noise-width pixels returned zero")
+
+    failures = []
+    if zero_pixels:
+        failures.append(f"{zero_pixels} noise-width pixel(s) returned zero")
+
+    average_noisewidth = float(np.mean(noisewidth_values))
+    if average_noisewidth > 7:
+        failures.append(
+            f"average noise width is {average_noisewidth:.2f}, above 7"
+        )
+    if failures:
+        raise NonFatalTestError("; ".join(failures))
 
     data = session.current_base_data | {
         "pos_0": etroc_noisewidths[0],

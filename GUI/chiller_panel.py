@@ -71,7 +71,7 @@ class ChillerPanel(Panel):
 
         self.lbl_set_temp_input = QLabel("Set Temp (°C): ")
         self.input_set_temp = QLineEdit()
-        self.input_set_temp.setFixedSize(60, 25)
+        self.input_set_temp.setFixedWidth(60)
         self.input_set_temp.setEnabled(False)
         self.btn_set_temp = QPushButton("Set")
         self.btn_set_temp.setObjectName("neutralButton")

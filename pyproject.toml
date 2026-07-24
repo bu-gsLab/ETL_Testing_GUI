@@ -27,7 +27,7 @@ dependencies = [
     "scipy>=1.17.1",
     "tabulate>=0.10.0",
     "tqdm>=4.67.3",
-    "uhal; sys_platform == 'linux'",
+    "uhal>=2.8.22.post1; sys_platform == 'linux'",
     "yahist>=1.14.2",
     "module_test_sw",
 ]
