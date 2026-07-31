@@ -290,7 +290,7 @@ class HVPanel(Panel):
 
                 outfile = resultdir / f"hv_supply_data_{self.log_timestamp}.csv"
 
-                data = {"OUTPUT": self.output, "VSET": self.vset, "VMON": self.vmon, "ISET": self.iset, "IMON": self.imon, "Status": self.status}
+                data = {"CH": self.hv.channel, "OUTPUT": self.output, "VSET": self.vset, "VMON": self.vmon, "ISET": self.iset, "IMON": self.imon, "Status": self.status}
                 with open(outfile, 'a') as f:
                     f.write(f"{timestamp}: {data}\n")
 
