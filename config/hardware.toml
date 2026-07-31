@@ -1,0 +1,6 @@
+[network]
+# KCU105
+kcu_ip = "192.168.0.15"
+
+# LV power supply
+lv_supply_ip = "192.168.0.30"

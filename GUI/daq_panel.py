@@ -10,6 +10,7 @@ from queue import Empty
 
 from .panel import Panel
 from .rb_panel import RBPanel
+from .config import load_hardware_config
 
 from qaqc.session import Session
 
@@ -78,6 +79,7 @@ class DAQPanel(Panel):
         # ----- Build panels -----
 
         self.kcu_ip_field = QLineEdit()
+        self.kcu_ip_field.setText(load_hardware_config().kcu_ip)
         self.kcu_ip_field.setFixedWidth(250)
         self.kcu_ip_lbl = QLabel("KCU IP: ")
         self.kcu_row = QHBoxLayout()

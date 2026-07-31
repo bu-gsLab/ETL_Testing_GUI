@@ -9,6 +9,7 @@ from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from .panel import Panel
+from .config import load_hardware_config
 from drivers.LV.lv_driver import LVPowerSupply
 
 class LVPanel(Panel):
@@ -150,6 +151,7 @@ class LVPanel(Panel):
         self.cmd_lock = threading.Lock()
         self.cmd_waiting = False
         self.cmd = None
+        self.lv_supply_ip = load_hardware_config().lv_supply_ip
 
 
 
@@ -177,7 +179,10 @@ class LVPanel(Panel):
         
         self.lv_stop_evt = threading.Event()
         try:
-            self.lv = LVPowerSupply("192.168.0.30", channel=self.channel_combobox.currentIndex() + 1)
+            self.lv = LVPowerSupply(
+                self.lv_supply_ip,
+                channel=self.channel_combobox.currentIndex() + 1,
+            )
             self.lbl_status.setText("Connected")
             self.lbl_status.setStyleSheet("color: #16a34a;")
             self.lv_stop_evt.clear()
