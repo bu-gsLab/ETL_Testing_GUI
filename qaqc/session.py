@@ -36,7 +36,7 @@ class Session:
         location: str = "BU",
         user_created: str = "unknown",
         room_temp_celcius: Optional[int] = None,
-        bias_volts: Optional[list[int]] = None,
+        bias_voltage: Optional[int] = None,
         sensor_types: Optional[list[str]] = None,
         hybrid_nums: Optional[list[int]] = None
     ):
@@ -50,7 +50,7 @@ class Session:
         self.user_created = user_created
         self.room_temp_celcius: float = room_temp_celcius
         self.current_slot = None
-        self.bias_volts = bias_volts
+        self.bias_voltage = bias_voltage
         self.sensor_types = sensor_types
         self.hybrid_nums = hybrid_nums
 

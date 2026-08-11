@@ -53,18 +53,20 @@ class LVPanel(Panel):
         self.btn_logging.setEnabled(False)
 
         button_row = QHBoxLayout()
+        button_row.setSpacing(round(self.em * 0.5))
         button_row.addWidget(self.btn_connect)
         button_row.addWidget(self.btn_disconnect)
-        button_row.addWidget(self.lbl_status, 1, Qt.AlignLeft)
+        button_row.addWidget(self.lbl_status, 0, Qt.AlignLeft)
         button_row.addStretch(1)
         button_row.addWidget(self.channel_combobox)
         self.channel_combobox.setEnabled(False)
         button_row.addStretch(1)
         button_row.addWidget(self.btn_logging)
-        button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
+        button_row.addWidget(self.lbl_logging, 0, Qt.AlignLeft)
 
     
         set_label_row = QHBoxLayout()
+        set_label_row.setSpacing(round(self.em * 0.5))
         self.lbl_set_voltage = QLabel("VSET: --- V")
         self.lbl_set_current = QLabel("ISET: ---.- uA")
         self.lbl_set_current.setEnabled(False)
@@ -73,6 +75,7 @@ class LVPanel(Panel):
         set_label_row.addWidget(self.lbl_set_current)
 
         mon_label_row = QHBoxLayout()
+        mon_label_row.setSpacing(round(self.em * 0.5))
         self.lbl_mon_voltage = QLabel("VMON: --- V")
         self.lbl_mon_current = QLabel("IMON: ---.- uA")
         self.lbl_mon_current.setEnabled(False)
@@ -81,10 +84,13 @@ class LVPanel(Panel):
         mon_label_row.addWidget(self.lbl_mon_current)
 
         input_row = QHBoxLayout()
+        input_row.setSpacing(round(self.em * 0.5))
 
         channel_input_row = QHBoxLayout()
         voltage_input_row = QHBoxLayout()
         current_input_row = QHBoxLayout()
+        for row in (channel_input_row, voltage_input_row, current_input_row):
+            row.setSpacing(round(self.em * 0.5))
 
         self.btn_power = QPushButton("Power")
         self.btn_power.setObjectName("neutralButton")
@@ -136,6 +142,7 @@ class LVPanel(Panel):
 
 
         main_layout = QVBoxLayout()
+        main_layout.setSpacing(round(self.em * 0.5))
         main_layout.addLayout(button_row)
         main_layout.addLayout(set_label_row)
         main_layout.addLayout(mon_label_row)

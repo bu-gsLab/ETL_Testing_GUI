@@ -47,12 +47,13 @@ class ArduinoPanel(Panel):
         self.btn_logging.setEnabled(False)
 
         button_row = QHBoxLayout()
+        button_row.setSpacing(round(self.em * 0.5))
         button_row.addWidget(self.btn_connect)
         button_row.addWidget(self.btn_disconnect)
-        button_row.addWidget(self.lbl_status, 1, Qt.AlignLeft)
+        button_row.addWidget(self.lbl_status, 0, Qt.AlignLeft)
         button_row.addStretch(1)
         button_row.addWidget(self.btn_logging)
-        button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
+        button_row.addWidget(self.lbl_logging, 0, Qt.AlignLeft)
 
         self.ambtemp_lbl = QLabel("Ambient Temp: --.-°C")
         self.rH_lbl = QLabel("Relative Humidity: --.-%")
@@ -79,6 +80,8 @@ class ArduinoPanel(Panel):
 
 
         label_grid = QGridLayout()
+        label_grid.setHorizontalSpacing(round(self.em * 1.5))
+        label_grid.setVerticalSpacing(round(self.em * 0.35))
 
         label_grid.addWidget(self.TC1_lbl, 0, 0)
         label_grid.addWidget(self.TC2_lbl, 1, 0)
@@ -97,6 +100,7 @@ class ArduinoPanel(Panel):
         label_grid.setColumnStretch(1, 1)
 
         buttons_and_labels = QVBoxLayout()
+        buttons_and_labels.setSpacing(round(self.em * 0.5))
         buttons_and_labels.addLayout(button_row)
         buttons_and_labels.addLayout(label_grid)
         self.subgrid.addLayout(buttons_and_labels, 1, 0, 1, 2, alignment=Qt.AlignTop)

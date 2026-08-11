@@ -64,7 +64,7 @@ def test(session) -> NoisewidthV0:
         "etroc_1_Vtemp": 2713,
         "etroc_2_Vtemp": 2713,
         "etroc_3_Vtemp": 2713,
-        "bias_volts": 150,
+        "bias_voltage": 150,
         "pos_0": np.zeros((16, 16)).tolist(),
         "pos_1": np.zeros((16, 16)).tolist(),
         "pos_2": np.zeros((16, 16)).tolist(),

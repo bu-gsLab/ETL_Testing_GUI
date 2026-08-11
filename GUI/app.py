@@ -56,6 +56,6 @@ if __name__ == "__main__":
     app.setStyle("Fusion") 
     app.setWindowIcon(QIcon(str(gui_dir / "icon.png")))
     window = MainWindow()
-    window.resize(1200, 800)
+    window.resize(1200, window.sizeHint().height())
     window.show()
     sys.exit(app.exec_())

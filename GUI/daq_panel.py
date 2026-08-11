@@ -95,7 +95,8 @@ class DAQPanel(Panel):
         self.rb_layout.addWidget(self.rb2)
 
         self.loading_bar = QProgressBar()
-        self.loading_bar.setRange(0, 0)
+        self.loading_bar.setRange(0, 1)
+        self.loading_bar.setValue(0)
         self.loading_bar.setTextVisible(False)
         self.loading_bar.setFixedWidth(180)
         self.loading_bar.setStyleSheet("""
@@ -109,7 +110,6 @@ class DAQPanel(Panel):
                 background-color: #2563eb;
             }
         """)
-        self.loading_bar.hide()
         self.status_label = QLabel("Ready")
         self.status_label.setWordWrap(True)
         self.status_label.setStyleSheet("color: white;")
@@ -159,13 +159,11 @@ class DAQPanel(Panel):
             return False
         
         try:
-            for i in range(len(rb_obj.modules)):
-                if rb_obj.modules[i].enable_check.isChecked():
-                    bias = rb_obj.modules[i].bias_input.text()
-                    int(bias)
-                    if abs(int(bias)) > 260: # Don't bias over breakdown
-                        print("Bias voltage set too high")
-                        raise ValueError
+            bias = rb_obj.bias_input.text()
+            int(bias)
+            if abs(int(bias)) > 260: # Don't bias over breakdown
+                print("Bias voltage set too high")
+                raise ValueError
         except ValueError:
             print(f"Invalid Bias Input: {bias}")
             return False
@@ -202,13 +200,11 @@ class DAQPanel(Panel):
         rb_size = rb_obj.rb_size
         rb_serial_number = rb_obj.rb_id_field.text()
         modules = [None] * rb_size
-        bias_volts = [None] * rb_size
         sensor_types = [None] * rb_size
         hybrid_nums = [None] * rb_size
         for i in range(rb_size):
             if rb_obj.modules[i].enable_check.isChecked():
                 modules[i] = rb_obj.modules[i].module_id_inputbox.text()
-                bias_volts[i] = abs(int(rb_obj.modules[i].bias_input.text()))
                 # keep track of sensor type and number of hybrids on module for setting current compliance
                 sensor_types[i] = rb_obj.modules[i].sensor.currentText()
                 hybrid_nums[i] = abs(int(rb_obj.modules[i].sensor_num.currentText()))
@@ -220,7 +216,7 @@ class DAQPanel(Panel):
             rb_serial_number=rb_serial_number,
             modules=modules,
             kcu_ipaddress=kcu_ip,
-            bias_volts=bias_volts,
+            bias_voltage=abs(int(rb_obj.bias_input.text())),
             sensor_types=sensor_types,
             hybrid_nums=hybrid_nums
         )
@@ -258,7 +254,7 @@ class DAQPanel(Panel):
             args=(session_config, slot_tests, self.status_queue),
         )
         self.daq_process.start()
-        self.loading_bar.show()
+        self.loading_bar.setRange(0, 0)
         self.status_label.setText("Starting tests...")
         self.process_timer.start(100)
         rb_obj.test_btn.setEnabled(False)
@@ -278,7 +274,8 @@ class DAQPanel(Panel):
     def finish_tests(self, rb_obj):
         self.daq_process = None
         self.active_rb_obj = None
-        self.loading_bar.hide()
+        self.loading_bar.setRange(0, 1)
+        self.loading_bar.setValue(0)
         if self.status_queue is not None:
             self.status_queue.close()
             self.status_queue = None

@@ -45,14 +45,16 @@ class ChillerPanel(Panel):
         self.btn_logging.setEnabled(False)
 
         button_row = QHBoxLayout()
+        button_row.setSpacing(round(self.em * 0.5))
         button_row.addWidget(self.btn_connect)
         button_row.addWidget(self.btn_disconnect)
-        button_row.addWidget(self.lbl_status, 1, Qt.AlignLeft)
+        button_row.addWidget(self.lbl_status, 0, Qt.AlignLeft)
         button_row.addStretch(1)
         button_row.addWidget(self.btn_logging)
-        button_row.addWidget(self.lbl_logging, 1, Qt.AlignLeft)
+        button_row.addWidget(self.lbl_logging, 0, Qt.AlignLeft)
         
         label_row = QHBoxLayout()
+        label_row.setSpacing(round(self.em * 0.5))
 
         self.lbl_set_temp = QLabel("Set Temp: --- °C")
         self.lbl_curr_temp = QLabel("Current Temp: --- °C")
@@ -61,6 +63,7 @@ class ChillerPanel(Panel):
         label_row.addWidget(self.lbl_curr_temp)
 
         input_row = QHBoxLayout()
+        input_row.setSpacing(round(self.em * 0.5))
 
         self.btn_power = QPushButton("Power")
         self.btn_power.setObjectName("neutralButton")
@@ -88,6 +91,7 @@ class ChillerPanel(Panel):
         input_row.addStretch(1)
 
         layout = QVBoxLayout()
+        layout.setSpacing(round(self.em * 0.5))
         layout.addLayout(button_row)
         layout.addLayout(label_row)
         layout.addLayout(input_row)

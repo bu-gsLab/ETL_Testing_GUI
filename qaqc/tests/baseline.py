@@ -64,7 +64,7 @@ def test(session) -> BaselineV0:
     etroc_vtemps = []
     etroc_baselines = []
 
-    bias = session.bias_volts[slot]
+    bias = session.bias_voltage
     sensor = session.sensor_types[slot] # "FBK" or "HPK"
     hybrid_num = session.hybrid_nums[slot]
     sensor_to_current = {"FBK": 100, "HPK": 10}

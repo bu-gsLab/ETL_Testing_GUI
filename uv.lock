@@ -624,6 +624,7 @@ dependencies = [
     { name = "gitpython" },
     { name = "hist" },
     { name = "i2c-gui2" },
+    { name = "matplotlib" },
     { name = "mplhep" },
     { name = "numpy" },
     { name = "pandas" },
@@ -649,6 +650,7 @@ requires-dist = [
     { name = "gitpython" },
     { name = "hist" },
     { name = "i2c-gui2" },
+    { name = "matplotlib", specifier = ">=3.10.9" },
     { name = "mplhep" },
     { name = "numpy" },
     { name = "pandas" },
@@ -659,7 +661,7 @@ requires-dist = [
     { name = "scipy" },
     { name = "tabulate" },
     { name = "tqdm" },
-    { name = "uhal", marker = "sys_platform == 'linux'" },
+    { name = "uhal", marker = "sys_platform == 'linux'", specifier = ">=2.8.22.post1" },
     { name = "yahist" },
 ]
 
