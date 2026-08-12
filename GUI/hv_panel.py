@@ -138,9 +138,9 @@ class HVPanel(Panel):
             ("moduleid", "Module ID:", ""),
             ("start_v", "Start (V):", "0"),
             ("stop_v", "Stop (V):", "100"),
-            ("step_v", "Step (V):", "10"),
-            ("curr_limit", "Limit (uA):", "10"),
-            ("delay", "Delay (s):", "10"),
+            ("step_v", "Step (V):", "5"),
+            ("curr_limit", "Limit (uA):", "45"),
+            ("delay", "Delay (s):", "3"),
         ):
             field_label = QLabel(label)
             field_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)

@@ -33,6 +33,7 @@ get_platformio.py
 # Add results/output directories when location they are generated is finalized
 
 Environmental Data/*
+IV_Curves/*
 results/*
 output/*
 fit_results/*
