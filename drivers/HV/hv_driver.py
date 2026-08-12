@@ -122,14 +122,32 @@ class HVPowerSupply():
         response = self.send_command('MON', self.channel, "POL")
         return self.parse_response(response)
     
-    def wait_ramp(self, delay):
+    def wait_ramp(self, delay, stop_event=None, progress_callback=None):
         while True:
-            if abs(float(self.read_vmon()['VAL'])-float(self.read_vset()['VAL']))<= self.vtol:
+            if stop_event is not None and stop_event.is_set():
+                raise InterruptedError("IV curve aborted by user")
+            vmon = self.extract_float_value(self.read_vmon())
+            vset = self.extract_float_value(self.read_vset())
+            status = int(self.read_status()['VAL'])
+            if progress_callback is not None:
+                progress_callback({
+                    "vset": vset,
+                    "vmon": vmon,
+                    "iset": self.extract_float_value(self.read_iset()),
+                    "imon": self.extract_float_value(self.read_imon()),
+                    "status": status,
+                    "output": status & 1,
+                })
+            if abs(vmon-vset) <= self.vtol:
                 break
-            if int(self.read_status()['VAL']) & 128 or int(self.read_status()['VAL']) & 8:
+            if status & 128 or status & 8:
                 raise ValueError("Compliance reached, supply tripped")
             time.sleep(.1)
-        time.sleep(delay)
+        if stop_event is not None:
+            if stop_event.wait(delay):
+                raise InterruptedError("IV curve aborted by user")
+        else:
+            time.sleep(delay)
         if int(self.read_status()['VAL']) & 128 or int(self.read_status()['VAL']) & 8:
                 raise ValueError("Compliance reached, supply tripped")
     
@@ -142,7 +160,8 @@ class HVPowerSupply():
                 return None
         return None
     
-    def IV_curve(self, start_v, stop_v, step_v, curr_limit, leave_on, delay):
+    def IV_curve(self, start_v, stop_v, step_v, curr_limit, leave_on, delay,
+                 stop_event=None, progress_callback=None):
         n = abs((stop_v - start_v) // step_v) + 1
         voltages = []
         currents = []
@@ -155,7 +174,7 @@ class HVPowerSupply():
         self.set_voltage(start_v)
         self.set_channel_on()
         try:
-            self.wait_ramp(delay)
+            self.wait_ramp(delay, stop_event, progress_callback)
         except ValueError as e:
             print(e)
             print(voltages, currents, kfactors)
@@ -172,7 +191,7 @@ class HVPowerSupply():
             volt = start_v + v * step_v
             self.set_voltage(volt)
             try:
-                self.wait_ramp(delay)
+                self.wait_ramp(delay, stop_event, progress_callback)
             except ValueError as e:
                 print(e)
                 print(voltages, currents, kfactors)
@@ -197,27 +216,21 @@ class HVPowerSupply():
     
     @staticmethod
     def plot_iv_data(voltages, currents, kfactors, output_path, title="IV Curve"):
-        """Plot IV data without opening a window (safe to call from the GUI worker)."""
+        """Plot current versus voltage without opening a GUI window."""
         fig = Figure()
         ax1 = fig.subplots()
 
         ax1.set_xlabel("Voltage (V)")
         ax1.set_ylabel("Current (uA)", color="red")
         ax1.set_yscale("log")
-        p1 = ax1.plot(voltages, currents, "o-", ms=3, color="red", label="Current")
+        ax1.plot(voltages, currents, "o-", ms=3, color="red", label="Current")
         ax1.tick_params(axis="y", labelcolor="red")
         ax1.grid(True, ls="--", alpha=0.3)
-
-        ax2 = ax1.twinx()
-        ax2.set_ylabel("K-Factor", color="blue")
-        p2 = ax2.plot(voltages, kfactors, "o--", ms=3, color="blue", label="K-Factor")
-        ax2.tick_params(axis="y", labelcolor="blue")
 
         if len(voltages) > 1 and voltages[-1] < voltages[0]:
             ax1.invert_xaxis()
 
-        lines = p1 + p2
-        ax1.legend(lines, [line.get_label() for line in lines], loc="best")
+        ax1.legend(loc="best")
         ax1.set_title(title)
         fig.tight_layout()
         output_path = Path(output_path)
@@ -227,7 +240,8 @@ class HVPowerSupply():
         return output_path
 
     def plot_IV_curve(self, start_v, stop_v, step_v, curr_limit, moduleid,
-                      leave_on=False, delay=10, comment=""):
+                      leave_on=False, delay=10, comment="", stop_event=None,
+                      progress_callback=None):
         """Acquire, save, and plot an IV curve; return paths and acquired arrays."""
         moduleid = str(moduleid).strip()
         if (not moduleid or moduleid in (".", "..") or
@@ -235,9 +249,10 @@ class HVPowerSupply():
             raise ValueError("Module ID is not a valid folder name")
         try:
             voltages, currents, kfactors = self.IV_curve(
-                start_v, stop_v, step_v, curr_limit, leave_on, delay)
+                start_v, stop_v, step_v, curr_limit, leave_on, delay,
+                stop_event, progress_callback)
         except Exception:
-            if not leave_on:
+            if not leave_on or (stop_event is not None and stop_event.is_set()):
                 self.set_channel_off()
             raise
 

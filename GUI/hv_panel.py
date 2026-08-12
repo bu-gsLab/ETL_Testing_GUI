@@ -27,6 +27,8 @@ class HVPanel(Panel):
         self.hv_thread = None
         self.log_status = False
         self.log_timestamp = None
+        self.iv_running = False
+        self.iv_abort_evt = threading.Event()
 
         self.btn_connect = QPushButton("Connect")
         self.btn_connect.setObjectName("neutralButton")
@@ -241,7 +243,9 @@ class HVPanel(Panel):
         if self.hv_thread == None:
             print("HV thread not running")
             return
-        
+
+        if self.iv_running:
+            self.iv_abort_evt.set()
         self.hv_stop_evt.set()
         self.hv_thread.join()
         self.hv_stop_evt.clear()
@@ -309,7 +313,9 @@ class HVPanel(Panel):
                         self.hv.set_channel_on()
                 elif cmd[0] == "iv_curve":
                     try:
-                        result = self.hv.plot_IV_curve(**cmd[1])
+                        result = self.hv.plot_IV_curve(
+                            **cmd[1], stop_event=self.iv_abort_evt,
+                            progress_callback=self.update_GUI_signal.emit)
                         self.iv_finished_signal.emit(result)
                     except Exception as e:
                         self.iv_failed_signal.emit(str(e))
@@ -358,6 +364,13 @@ class HVPanel(Panel):
         if self.hv_thread is None:
             return
 
+        if data["status"] & 2:
+            self.ramp = "Ramp Up"
+        elif data["status"] & 4:
+            self.ramp = "Ramp Down"
+        else:
+            self.ramp = None
+
         if data["output"]:
             if not self.ramp:
                 self.lbl_power.setText("ON")
@@ -381,6 +394,9 @@ class HVPanel(Panel):
 
 
     def set_voltage(self):
+        if self.iv_running:
+            QMessageBox.information(self, "IV curve running", "Abort the IV curve before changing VSET.")
+            return
         try:
             value = float(self.set_voltage_field.text())
         except ValueError:
@@ -393,6 +409,9 @@ class HVPanel(Panel):
         self.set_voltage_field.clear()
 
     def set_current(self):
+        if self.iv_running:
+            QMessageBox.information(self, "IV curve running", "Abort the IV curve before changing ISET.")
+            return
         try:
             value = float(self.set_current_field.text())
         except ValueError:
@@ -405,6 +424,9 @@ class HVPanel(Panel):
         self.set_current_field.clear()
     
     def set_channel(self):
+        if self.iv_running:
+            QMessageBox.information(self, "IV curve running", "Use Abort to stop the active IV curve safely.")
+            return
         with self.cmd_lock:
             self.cmd_waiting = True
             self.cmd = ["output"]
@@ -433,6 +455,12 @@ class HVPanel(Panel):
             widget.setEnabled(enabled)
 
     def run_iv_curve(self):
+        if self.iv_running:
+            self.iv_abort_evt.set()
+            self.btn_iv_curve.setEnabled(False)
+            self.lbl_iv_status.setText("Aborting...")
+            return
+
         try:
             moduleid = self.iv_fields["moduleid"].text().strip()
             if not moduleid:
@@ -471,13 +499,21 @@ class HVPanel(Panel):
                 return
             self.cmd_waiting = True
             self.cmd = ["iv_curve", params]
-        self.set_iv_controls_enabled(False)
-        self.set_manual_controls_enabled(False)
+        self.iv_abort_evt.clear()
+        self.iv_running = True
+        for field in self.iv_fields.values():
+            field.setEnabled(False)
+        self.iv_leave_on.setEnabled(False)
+        self.btn_iv_curve.setText("Abort")
+        self.btn_iv_curve.setObjectName("redButton")
+        self.btn_iv_curve.style().unpolish(self.btn_iv_curve)
+        self.btn_iv_curve.style().polish(self.btn_iv_curve)
         self.lbl_iv_status.setText("Running...")
 
     def iv_finished(self, result):
-        self.set_iv_controls_enabled(True)
-        self.set_manual_controls_enabled(True)
+        self.iv_running = False
+        self.set_iv_controls_enabled(self.hv_thread is not None)
+        self.reset_iv_button()
         self.lbl_iv_status.setText("Complete")
         QMessageBox.information(
             self, "IV curve complete",
@@ -487,7 +523,21 @@ class HVPanel(Panel):
             f"Comments: {result['comment_path'].name}")
 
     def iv_failed(self, message):
-        self.set_iv_controls_enabled(True)
-        self.set_manual_controls_enabled(True)
-        self.lbl_iv_status.setText("Failed")
-        QMessageBox.critical(self, "IV curve failed", message)
+        was_aborted = self.iv_abort_evt.is_set()
+        self.iv_running = False
+        self.set_iv_controls_enabled(self.hv_thread is not None)
+        self.reset_iv_button()
+        if was_aborted:
+            self.lbl_iv_status.setText("Aborted")
+            QMessageBox.information(self, "IV curve aborted", "The IV curve was aborted and HV was turned off.")
+        else:
+            self.lbl_iv_status.setText("Failed")
+            QMessageBox.critical(self, "IV curve failed", message)
+
+    def reset_iv_button(self):
+        self.iv_abort_evt.clear()
+        self.btn_iv_curve.setText("Run IV Curve")
+        self.btn_iv_curve.setObjectName("neutralButton")
+        self.btn_iv_curve.setEnabled(self.hv_thread is not None)
+        self.btn_iv_curve.style().unpolish(self.btn_iv_curve)
+        self.btn_iv_curve.style().polish(self.btn_iv_curve)
