@@ -4,7 +4,9 @@ import serial
 import time
 import os
 
-from PyQt5.QtWidgets import QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QComboBox
+from PyQt5.QtWidgets import (QPushButton, QLabel, QLineEdit, QHBoxLayout,
+                             QVBoxLayout, QComboBox, QCheckBox, QMessageBox,
+                             QInputDialog)
 from pathlib import Path
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -13,6 +15,8 @@ from drivers.HV.hv_driver import HVPowerSupply
 
 class HVPanel(Panel):
     update_GUI_signal = pyqtSignal(dict)
+    iv_finished_signal = pyqtSignal(dict)
+    iv_failed_signal = pyqtSignal(str)
 
     def __init__(self, title="HV Supply"):
         super().__init__(title)
@@ -123,6 +127,39 @@ class HVPanel(Panel):
         input_row.addLayout(channel_input_row)
         input_row.addSpacing(self.em*2)
         input_row.addStretch(1)
+
+        iv_row = QHBoxLayout()
+        iv_row.setSpacing(round(self.em * 0.5))
+        self.iv_fields = {}
+        self.iv_labels = []
+        for key, label, default in (
+            ("moduleid", "Module ID:", ""),
+            ("start_v", "Start (V):", "0"),
+            ("stop_v", "Stop (V):", "100"),
+            ("step_v", "Step (V):", "10"),
+            ("curr_limit", "Limit (uA):", "10"),
+            ("delay", "Delay (s):", "10"),
+        ):
+            field_label = QLabel(label)
+            field_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.iv_labels.append(field_label)
+            iv_row.addWidget(field_label, 0, Qt.AlignVCenter)
+            field = QLineEdit(default, parent=self)
+            field.setFixedWidth(60 if key != "moduleid" else 90)
+            field.setAlignment(Qt.AlignCenter)
+            field.setEnabled(False)
+            self.iv_fields[key] = field
+            iv_row.addWidget(field, 0, Qt.AlignVCenter)
+        self.iv_leave_on = QCheckBox("Leave on")
+        self.iv_leave_on.setEnabled(False)
+        self.btn_iv_curve = QPushButton("Run IV Curve")
+        self.btn_iv_curve.setObjectName("neutralButton")
+        self.btn_iv_curve.setEnabled(False)
+        self.btn_iv_curve.clicked.connect(self.run_iv_curve)
+        self.lbl_iv_status = QLabel("Idle")
+        iv_row.addWidget(self.iv_leave_on)
+        iv_row.addWidget(self.btn_iv_curve)
+        iv_row.addWidget(self.lbl_iv_status)
         input_row.addLayout(voltage_input_row)
         input_row.addSpacing(self.em*2)
         input_row.addStretch(1)
@@ -136,6 +173,7 @@ class HVPanel(Panel):
         main_layout.addLayout(set_label_row)
         main_layout.addLayout(mon_label_row)
         main_layout.addLayout(input_row)
+        main_layout.addLayout(iv_row)
 
         self.subgrid.addLayout(main_layout, 1, 0, 5, 5, Qt.AlignTop)
         self.sample_time = 0.5
@@ -147,6 +185,8 @@ class HVPanel(Panel):
         self.data = {}
 
         self.update_GUI_signal.connect(self.update_GUI)
+        self.iv_finished_signal.connect(self.iv_finished)
+        self.iv_failed_signal.connect(self.iv_failed)
         self.lbl_set_current_field.setEnabled(False)
         self.lbl_set_voltage_field.setEnabled(False)
         self.lbl_logging.setEnabled(False)
@@ -154,6 +194,9 @@ class HVPanel(Panel):
         self.lbl_set_voltage.setEnabled(False)
         self.lbl_mon_current.setEnabled(False)
         self.lbl_mon_voltage.setEnabled(False)
+        self.lbl_iv_status.setEnabled(False)
+        for label in self.iv_labels:
+            label.setEnabled(False)
         self.ramp = None
 
     def start_hv(self):
@@ -188,6 +231,7 @@ class HVPanel(Panel):
             self.lbl_power.setEnabled(True)
             self.lbl_mon_current.setEnabled(True)
             self.lbl_mon_voltage.setEnabled(True)
+            self.set_iv_controls_enabled(True)
             time.sleep(self.sample_time)
         except serial.SerialException as e:
             print(f"Failed to connect: {e}")
@@ -232,6 +276,7 @@ class HVPanel(Panel):
             self.lbl_power.setEnabled(False)
             self.lbl_mon_current.setEnabled(False)
             self.lbl_mon_voltage.setEnabled(False)
+            self.set_iv_controls_enabled(False)
 
 
     def hv_run(self):
@@ -262,6 +307,12 @@ class HVPanel(Panel):
                         self.hv.set_channel_off()
                     else:
                         self.hv.set_channel_on()
+                elif cmd[0] == "iv_curve":
+                    try:
+                        result = self.hv.plot_IV_curve(**cmd[1])
+                        self.iv_finished_signal.emit(result)
+                    except Exception as e:
+                        self.iv_failed_signal.emit(str(e))
             self.hv.channel = self.channel_combobox.currentIndex()
             self.vset = self.hv.extract_float_value(self.hv.read_vset())
             self.vmon = self.hv.extract_float_value(self.hv.read_vmon())
@@ -365,3 +416,78 @@ class HVPanel(Panel):
             self.log_timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
         else:
             self.lbl_logging.setText("Not Logging")
+
+    def set_iv_controls_enabled(self, enabled):
+        for label in self.iv_labels:
+            label.setEnabled(enabled)
+        for field in self.iv_fields.values():
+            field.setEnabled(enabled)
+        self.iv_leave_on.setEnabled(enabled)
+        self.btn_iv_curve.setEnabled(enabled)
+        self.lbl_iv_status.setEnabled(enabled)
+
+    def set_manual_controls_enabled(self, enabled):
+        for widget in (self.btn_disconnect, self.channel_combobox, self.btn_power,
+                       self.btn_iset, self.btn_vset, self.btn_logging,
+                       self.set_current_field, self.set_voltage_field):
+            widget.setEnabled(enabled)
+
+    def run_iv_curve(self):
+        try:
+            moduleid = self.iv_fields["moduleid"].text().strip()
+            if not moduleid:
+                raise ValueError("Module ID is required")
+            if moduleid in (".", "..") or any(char in moduleid for char in '<>:"/\\|?*'):
+                raise ValueError("Module ID contains characters that cannot be used in a folder name")
+            params = {
+                "start_v": float(self.iv_fields["start_v"].text()),
+                "stop_v": float(self.iv_fields["stop_v"].text()),
+                "step_v": float(self.iv_fields["step_v"].text()),
+                "curr_limit": float(self.iv_fields["curr_limit"].text()),
+                "moduleid": moduleid,
+                "leave_on": self.iv_leave_on.isChecked(),
+                "delay": float(self.iv_fields["delay"].text()),
+            }
+            if params["step_v"] == 0:
+                raise ValueError("Voltage step cannot be zero")
+            if (params["stop_v"] - params["start_v"]) * params["step_v"] < 0:
+                raise ValueError("Voltage step must point from start toward stop")
+        except ValueError as e:
+            QMessageBox.warning(self, "Invalid IV settings", str(e))
+            return
+
+        comment, accepted = QInputDialog.getMultiLineText(
+            self,
+            "IV curve context",
+            "Add context or comments for this run:",
+        )
+        if not accepted:
+            return
+        params["comment"] = comment
+
+        with self.cmd_lock:
+            if self.cmd_waiting:
+                QMessageBox.warning(self, "HV busy", "Another HV command is pending.")
+                return
+            self.cmd_waiting = True
+            self.cmd = ["iv_curve", params]
+        self.set_iv_controls_enabled(False)
+        self.set_manual_controls_enabled(False)
+        self.lbl_iv_status.setText("Running...")
+
+    def iv_finished(self, result):
+        self.set_iv_controls_enabled(True)
+        self.set_manual_controls_enabled(True)
+        self.lbl_iv_status.setText("Complete")
+        QMessageBox.information(
+            self, "IV curve complete",
+            f"Saved run files to:\n{result['result_dir']}\n\n"
+            f"Plot: {result['plot_path'].name}\n"
+            f"Raw data: {result['csv_path'].name}\n"
+            f"Comments: {result['comment_path'].name}")
+
+    def iv_failed(self, message):
+        self.set_iv_controls_enabled(True)
+        self.set_manual_controls_enabled(True)
+        self.lbl_iv_status.setText("Failed")
+        QMessageBox.critical(self, "IV curve failed", message)

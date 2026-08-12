@@ -1,9 +1,10 @@
 import serial
 import time
-import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import numpy as np
 from pathlib import Path
 import os
+import csv
 #from etlup.module.ModuleIV import ModuleIVV0
 #from etlup import prod_session
 
@@ -194,60 +195,77 @@ class HVPowerSupply():
         print(voltages, currents, kfactors)
         return voltages, currents, kfactors
     
-    def plot_IV_curve(self, start_v, stop_v, step_v, curr_limit, moduleid, leave_on=False, delay=10):
-        voltages, currents, kfactors = self.IV_curve(start_v, stop_v, step_v, curr_limit, leave_on, delay)
+    @staticmethod
+    def plot_iv_data(voltages, currents, kfactors, output_path, title="IV Curve"):
+        """Plot IV data without opening a window (safe to call from the GUI worker)."""
+        fig = Figure()
+        ax1 = fig.subplots()
+
+        ax1.set_xlabel("Voltage (V)")
+        ax1.set_ylabel("Current (uA)", color="red")
+        ax1.set_yscale("log")
+        p1 = ax1.plot(voltages, currents, "o-", ms=3, color="red", label="Current")
+        ax1.tick_params(axis="y", labelcolor="red")
+        ax1.grid(True, ls="--", alpha=0.3)
+
+        ax2 = ax1.twinx()
+        ax2.set_ylabel("K-Factor", color="blue")
+        p2 = ax2.plot(voltages, kfactors, "o--", ms=3, color="blue", label="K-Factor")
+        ax2.tick_params(axis="y", labelcolor="blue")
+
+        if len(voltages) > 1 and voltages[-1] < voltages[0]:
+            ax1.invert_xaxis()
+
+        lines = p1 + p2
+        ax1.legend(lines, [line.get_label() for line in lines], loc="best")
+        ax1.set_title(title)
+        fig.tight_layout()
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(output_path, dpi=150)
+        fig.clear()
+        return output_path
+
+    def plot_IV_curve(self, start_v, stop_v, step_v, curr_limit, moduleid,
+                      leave_on=False, delay=10, comment=""):
+        """Acquire, save, and plot an IV curve; return paths and acquired arrays."""
+        moduleid = str(moduleid).strip()
+        if (not moduleid or moduleid in (".", "..") or
+                any(char in moduleid for char in '<>:"/\\|?*')):
+            raise ValueError("Module ID is not a valid folder name")
+        try:
+            voltages, currents, kfactors = self.IV_curve(
+                start_v, stop_v, step_v, curr_limit, leave_on, delay)
+        except Exception:
+            if not leave_on:
+                self.set_channel_off()
+            raise
 
         timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
         maindir = Path(__file__).parent.parent.parent
 
         resultdir = maindir / "IV_Curves" / str(moduleid) / timestamp
-        if not os.path.isdir(resultdir):
-            os.makedirs(resultdir)
-
-        resultdir.mkdir(exist_ok=True)
+        resultdir.mkdir(parents=True, exist_ok=True)
 
         outfile = resultdir / f"IV_Curve_{moduleid}_{timestamp}.csv"
-        with open(outfile, 'w') as f:
-            f.write(f"Voltage (V): {voltages}\n")
-            f.write(f"Current (uA): {currents}\n")
-            f.write(f"K-Factor: {kfactors}\n")
+        with open(outfile, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(voltages)
+            writer.writerow(currents)
+            writer.writerow(kfactors)
 
-        fig, ax1 = plt.subplots()
+        commentfile = resultdir / "comment.txt"
+        commentfile.write_text(comment, encoding="utf-8")
 
-        ax1.set_xlabel('Voltage (V)')
-        ax1.set_ylabel('Current ($\mu$A)')
-        p1 = ax1.plot(voltages, currents, color = 'red', label="Current", marker='.')
-        ax1.tick_params(axis = 'y', labelcolor = 'red', color = 'red')
-
-        ax2 = ax1.twinx()
-        ax2.set_ylabel('K-Factor')
-        p2 = ax2.plot(voltages, kfactors, color = 'blue', label="K-Factor", marker='.')
-        ax2.tick_params(axis = 'y', labelcolor = 'blue', color = 'blue')
-
-        if self.read_polarity()['VAL'] == '-':
-            plt.gca().invert_xaxis()
-
-        ps = p1+p2
-        labs = [l.get_label() for l in ps]
-        ax1.legend(ps, labs, loc=0)
-        ax1.grid()
-        plt.title('IV Curve')
-        plt.savefig(resultdir / f"IV_Curve_{moduleid}_{timestamp}.png")
-        plt.show()
-
-        upload_bool = input("Upload results to database? (y/n): ")
-        if upload_bool.strip().lower() == 'y' or upload_bool.strip().lower() == 'yes':
-            user = str(input("CERN Username: "))
-            iv = ModuleIVV0(
-                module=moduleid,
-                measurement_date=timestamp,
-                location="BU",
-                user_created=user,
-                current = currents,
-                voltage = voltages,
-                k_factor = kfactors,
-            )
-            print(iv)
-            tests = [iv]
-            prod_session.add_all(tests)
-            prod_session.upload()
+        plotfile = resultdir / f"IV_Curve_{moduleid}_{timestamp}.png"
+        self.plot_iv_data(voltages, currents, kfactors, plotfile,
+                          title=f"IV Curve - {moduleid}")
+        return {
+            "voltages": voltages,
+            "currents": currents,
+            "kfactors": kfactors,
+            "csv_path": outfile,
+            "plot_path": plotfile,
+            "comment_path": commentfile,
+            "result_dir": resultdir,
+        }

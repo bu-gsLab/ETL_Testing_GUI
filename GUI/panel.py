@@ -18,6 +18,7 @@ class Panel(QFrame):
         QLabel {{ color: #ffffff; }}
         QLabel:disabled {{ color: #9aa5b1 }}
         QCheckBox {{ color: #ffffff; }}
+        QCheckBox:disabled {{ color: #9aa5b1; }}
         QLineEdit, QPlainTextEdit {{
             color: #ffffff;
             border: {max(1, round(em * 0.07))}px solid #ffffff;
@@ -28,7 +29,10 @@ class Panel(QFrame):
             min-height: {round(em * 1.2)}px;
             max-height: {round(em * 1.2)}px;
         }}
-        QLineEdit:disabled {{ border: {max(1, round(em * 0.07))}px solid #9aa5b1 }}
+        QLineEdit:disabled {{
+            color: #9aa5b1;
+            border: {max(1, round(em * 0.07))}px solid #9aa5b1;
+        }}
         QPushButton {{
             color: #ffffff;
             border: none;
