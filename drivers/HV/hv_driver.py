@@ -241,7 +241,7 @@ class HVPowerSupply():
 
     def plot_IV_curve(self, start_v, stop_v, step_v, curr_limit, moduleid,
                       leave_on=False, delay=10, comment="", stop_event=None,
-                      progress_callback=None):
+                      progress_callback=None, preserve_output_on_abort=None):
         """Acquire, save, and plot an IV curve; return paths and acquired arrays."""
         moduleid = str(moduleid).strip()
         if (not moduleid or moduleid in (".", "..") or
@@ -252,7 +252,12 @@ class HVPowerSupply():
                 start_v, stop_v, step_v, curr_limit, leave_on, delay,
                 stop_event, progress_callback)
         except Exception:
-            if not leave_on or (stop_event is not None and stop_event.is_set()):
+            preserving_output = (
+                preserve_output_on_abort is not None
+                and preserve_output_on_abort.is_set()
+            )
+            if not preserving_output and (
+                    not leave_on or (stop_event is not None and stop_event.is_set())):
                 self.set_channel_off()
             raise
 

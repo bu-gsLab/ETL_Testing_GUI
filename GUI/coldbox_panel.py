@@ -32,3 +32,16 @@ class ColdboxPanel(Panel):
         self.coldbox_layout.addWidget(self.lv)
 
         self.subgrid.addLayout(self.coldbox_layout, 1, 0, 5, 5, Qt.AlignTop)
+
+    def shutdown(self):
+        """Disconnect every coldbox device and stop environmental logging."""
+        # Stop every logger immediately, independently of device shutdown.
+        for panel in (self.hv, self.lv, self.chill, self.ard):
+            panel.stop_logging()
+
+        # Close connections without issuing any device power-state commands.
+        for panel in (self.hv, self.lv, self.chill, self.ard):
+            try:
+                panel.shutdown()
+            except Exception as error:
+                print(f"Error while shutting down {panel.objectName()}: {error}")

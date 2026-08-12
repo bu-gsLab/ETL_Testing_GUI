@@ -636,7 +636,7 @@ dependencies = [
     { name = "scipy" },
     { name = "tabulate" },
     { name = "tqdm" },
-    { name = "uhal" },
+    { name = "uhal", marker = "sys_platform == 'linux'" },
     { name = "yahist" },
 ]
 
@@ -662,8 +662,7 @@ requires-dist = [
     { name = "scipy" },
     { name = "tabulate" },
     { name = "tqdm" },
-    { name = "uhal", specifier = ">=2.8.22.post1" },
-    { name = "uhal", marker = "sys_platform == 'linux'" },
+    { name = "uhal", marker = "sys_platform == 'linux'", specifier = ">=2.8.22.post1" },
     { name = "yahist" },
 ]
 

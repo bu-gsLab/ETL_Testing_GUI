@@ -44,6 +44,26 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.coldbox_tab, "Coldbox")
         self.tabs.setStyleSheet("QTabBar::tab { color: white; }")
 
+        self._shutting_down = False
+
+    def closeEvent(self, event):
+        """Stop acquisition and disconnect hardware before exiting."""
+        if self._shutting_down:
+            event.accept()
+            return
+
+        self._shutting_down = True
+        try:
+            for component in (self.DAQ_frame, self.coldbox_frame):
+                try:
+                    component.shutdown()
+                except Exception as error:
+                    # Continue so one cleanup error cannot strand the other
+                    # background threads or processes.
+                    print(f"Error while shutting down the GUI: {error}")
+        finally:
+            event.accept()
+
 
 if __name__ == "__main__":
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)

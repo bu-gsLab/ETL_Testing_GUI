@@ -29,6 +29,7 @@ class HVPanel(Panel):
         self.log_timestamp = None
         self.iv_running = False
         self.iv_abort_evt = threading.Event()
+        self.preserve_output_on_abort_evt = threading.Event()
 
         self.btn_connect = QPushButton("Connect")
         self.btn_connect.setObjectName("neutralButton")
@@ -240,9 +241,9 @@ class HVPanel(Panel):
     
    
     def stop_hv(self):
+        self.stop_logging()
         if self.hv_thread == None:
-            print("HV thread not running")
-            return
+            return True
 
         if self.iv_running:
             self.iv_abort_evt.set()
@@ -281,6 +282,7 @@ class HVPanel(Panel):
             self.lbl_mon_current.setEnabled(False)
             self.lbl_mon_voltage.setEnabled(False)
             self.set_iv_controls_enabled(False)
+        return True
 
 
     def hv_run(self):
@@ -315,7 +317,8 @@ class HVPanel(Panel):
                     try:
                         result = self.hv.plot_IV_curve(
                             **cmd[1], stop_event=self.iv_abort_evt,
-                            progress_callback=self.update_GUI_signal.emit)
+                            progress_callback=self.update_GUI_signal.emit,
+                            preserve_output_on_abort=self.preserve_output_on_abort_evt)
                         self.iv_finished_signal.emit(result)
                     except Exception as e:
                         self.iv_failed_signal.emit(str(e))
@@ -438,6 +441,19 @@ class HVPanel(Panel):
             self.log_timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
         else:
             self.lbl_logging.setText("Not Logging")
+
+    def stop_logging(self):
+        self.log_status = False
+        self.log_timestamp = None
+        self.lbl_logging.setText("Not Logging")
+
+    def shutdown(self):
+        """Stop GUI activity and disconnect without changing the HV state."""
+        self.preserve_output_on_abort_evt.set()
+        try:
+            return self.stop_hv()
+        finally:
+            self.preserve_output_on_abort_evt.clear()
 
     def set_iv_controls_enabled(self, enabled):
         for label in self.iv_labels:

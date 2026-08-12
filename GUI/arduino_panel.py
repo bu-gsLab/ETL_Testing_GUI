@@ -149,9 +149,8 @@ class ArduinoPanel(Panel):
 
 
     def stop_recording(self):
-
+        self.stop_logging()
         if self.recording_thread == None:
-            print("Recording thread not running")
             return
 
         self.recorder_stop_evt.set()
@@ -264,3 +263,12 @@ class ArduinoPanel(Panel):
             self.log_timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
         else:
             self.lbl_logging.setText("Not Logging")
+
+    def stop_logging(self):
+        self.log_status = False
+        self.log_timestamp = None
+        self.lbl_logging.setText("Not Logging")
+
+    def shutdown(self):
+        """Stop data collection and close the Arduino connection."""
+        self.stop_recording()

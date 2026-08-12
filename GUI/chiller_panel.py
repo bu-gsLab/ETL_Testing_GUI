@@ -146,8 +146,8 @@ class ChillerPanel(Panel):
     
     
     def stop_chiller(self):
+        self.stop_logging()
         if self.chiller_thread == None:
-            print("Chiller thread not running")
             return
         
         self.chiller_stop_evt.set()
@@ -276,3 +276,17 @@ class ChillerPanel(Panel):
             self.log_timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
         else:
             self.lbl_logging.setText("Not Logging")
+
+    def stop_logging(self):
+        self.log_status = False
+        self.log_timestamp = None
+        self.lbl_logging.setText("Not Logging")
+
+    def shutdown(self):
+        """Stop monitoring and close the chiller connection.
+
+        The chiller's power state is deliberately preserved: turning cooling off
+        automatically can be less safe than leaving the configured temperature
+        control running.
+        """
+        self.stop_chiller()

@@ -271,6 +271,18 @@ class DAQPanel(Panel):
             self.status_label.setText("Tests stopped")
             self.finish_tests(rb_obj)
 
+    def shutdown(self):
+        """Stop an active DAQ test process and release its queue."""
+        if self.daq_process is not None and self.daq_process.is_alive():
+            self.daq_process.terminate()
+            self.daq_process.join()
+        self.process_timer.stop()
+        if self.status_queue is not None:
+            self.status_queue.close()
+            self.status_queue = None
+        self.daq_process = None
+        self.active_rb_obj = None
+
     def finish_tests(self, rb_obj):
         self.daq_process = None
         self.active_rb_obj = None
