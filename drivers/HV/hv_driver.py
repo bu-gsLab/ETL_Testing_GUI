@@ -215,8 +215,21 @@ class HVPowerSupply():
         return voltages, currents, kfactors
     
     @staticmethod
+    def correct_iv_data(voltages, currents):
+        corrected = [max(current - abs(voltage / 100), 0)
+                     for voltage, current in zip(voltages, currents)]
+        kfactors = [np.nan]
+        for index in range(1, len(corrected)):
+            delta_v = abs(voltages[index] - voltages[index - 1])
+            current = corrected[index]
+            if delta_v and current:
+                kfactors.append(((current - corrected[index - 1]) / delta_v) * (abs(voltages[index]) / current))
+            else:
+                kfactors.append(np.nan)
+        return corrected, kfactors
+
+    @staticmethod
     def plot_iv_data(voltages, currents, kfactors, output_path, title="IV Curve"):
-        """Plot current versus voltage without opening a GUI window."""
         fig = Figure()
         ax1 = fig.subplots()
 
@@ -242,7 +255,6 @@ class HVPowerSupply():
     def plot_IV_curve(self, start_v, stop_v, step_v, curr_limit, moduleid,
                       leave_on=False, delay=10, comment="", stop_event=None,
                       progress_callback=None, preserve_output_on_abort=None):
-        """Acquire, save, and plot an IV curve; return paths and acquired arrays."""
         moduleid = str(moduleid).strip()
         if (not moduleid or moduleid in (".", "..") or
                 any(char in moduleid for char in '<>:"/\\|?*')):
@@ -267,25 +279,39 @@ class HVPowerSupply():
         resultdir = maindir / "IV_Curves" / str(moduleid) / timestamp
         resultdir.mkdir(parents=True, exist_ok=True)
 
-        outfile = resultdir / f"IV_Curve_{moduleid}_{timestamp}.csv"
-        with open(outfile, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(voltages)
-            writer.writerow(currents)
-            writer.writerow(kfactors)
+        corrected_currents, corrected_kfactors = self.correct_iv_data(
+            voltages, currents)
+        outfile = resultdir / f"IV_Curve_{moduleid}_{timestamp}_raw.csv"
+        corrected_outfile = resultdir / f"IV_Curve_{moduleid}_{timestamp}_corrected.csv"
+        for path, data_currents, data_kfactors in (
+                (outfile, currents, kfactors),
+                (corrected_outfile, corrected_currents, corrected_kfactors)):
+            with open(path, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(voltages)
+                writer.writerow(data_currents)
+                writer.writerow(data_kfactors)
 
         commentfile = resultdir / "comment.txt"
         commentfile.write_text(comment, encoding="utf-8")
 
-        plotfile = resultdir / f"IV_Curve_{moduleid}_{timestamp}.png"
+        plotfile = resultdir / f"IV_Curve_{moduleid}_{timestamp}_raw.png"
+        corrected_plotfile = resultdir / f"IV_Curve_{moduleid}_{timestamp}_corrected.png"
         self.plot_iv_data(voltages, currents, kfactors, plotfile,
-                          title=f"IV Curve - {moduleid}")
+                          title=f"IV Curve - {moduleid} (raw)")
+        self.plot_iv_data(voltages, corrected_currents, corrected_kfactors,
+                          corrected_plotfile,
+                          title=f"IV Curve - {moduleid} (corrected)")
         return {
             "voltages": voltages,
             "currents": currents,
             "kfactors": kfactors,
+            "corrected_currents": corrected_currents,
+            "corrected_kfactors": corrected_kfactors,
             "csv_path": outfile,
+            "corrected_csv_path": corrected_outfile,
             "plot_path": plotfile,
+            "corrected_plot_path": corrected_plotfile,
             "comment_path": commentfile,
             "result_dir": resultdir,
         }

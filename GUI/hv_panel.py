@@ -448,7 +448,6 @@ class HVPanel(Panel):
         self.lbl_logging.setText("Not Logging")
 
     def shutdown(self):
-        """Stop GUI activity and disconnect without changing the HV state."""
         self.preserve_output_on_abort_evt.set()
         try:
             return self.stop_hv()
@@ -534,8 +533,10 @@ class HVPanel(Panel):
         QMessageBox.information(
             self, "IV curve complete",
             f"Saved run files to:\n{result['result_dir']}\n\n"
-            f"Plot: {result['plot_path'].name}\n"
+            f"Raw plot: {result['plot_path'].name}\n"
+            f"Corrected plot: {result['corrected_plot_path'].name}\n"
             f"Raw data: {result['csv_path'].name}\n"
+            f"Corrected data: {result['corrected_csv_path'].name}\n"
             f"Comments: {result['comment_path'].name}")
 
     def iv_failed(self, message):
